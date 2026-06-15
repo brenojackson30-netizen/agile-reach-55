@@ -14,13 +14,232 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      client_assignments: {
+        Row: {
+          client_id: string | null
+          created_at: string | null
+          employee_id: string | null
+          id: string
+          role: string
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string | null
+          employee_id?: string | null
+          id?: string
+          role: string
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string | null
+          employee_id?: string | null
+          id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_assignments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_assignments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          brand_color: string | null
+          created_at: string | null
+          description: string | null
+          facebook_url: string | null
+          id: string
+          instagram_url: string | null
+          is_active: boolean | null
+          linkedin_url: string | null
+          logo_url: string | null
+          name: string
+          twitter_url: string | null
+          updated_at: string | null
+          website_url: string | null
+        }
+        Insert: {
+          brand_color?: string | null
+          created_at?: string | null
+          description?: string | null
+          facebook_url?: string | null
+          id?: string
+          instagram_url?: string | null
+          is_active?: boolean | null
+          linkedin_url?: string | null
+          logo_url?: string | null
+          name: string
+          twitter_url?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          brand_color?: string | null
+          created_at?: string | null
+          description?: string | null
+          facebook_url?: string | null
+          id?: string
+          instagram_url?: string | null
+          is_active?: boolean | null
+          linkedin_url?: string | null
+          logo_url?: string | null
+          name?: string
+          twitter_url?: string | null
+          updated_at?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      employees: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          email: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          role: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          role?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          role?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      post_completions: {
+        Row: {
+          completed_at: string | null
+          completed_by: string | null
+          id: string
+          notes: string | null
+          post_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          completed_by?: string | null
+          id?: string
+          notes?: string | null
+          post_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          completed_by?: string | null
+          id?: string
+          notes?: string | null
+          post_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_completions_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_completions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      scheduled_posts: {
+        Row: {
+          client_id: string | null
+          content: string
+          created_at: string | null
+          created_by: string | null
+          id: string
+          image_url: string | null
+          platform: string
+          scheduled_date: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          content: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          image_url?: string | null
+          platform: string
+          scheduled_date: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          content?: string
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          image_url?: string | null
+          platform?: string
+          scheduled_date?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_posts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_posts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_client_access: {
+        Args: { p_client_id: string; p_required_role: string[] }
+        Returns: boolean
+      }
+      is_global_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

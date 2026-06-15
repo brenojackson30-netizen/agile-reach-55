@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
-import type { Employee } from "@/integrations/supabase/types";
+import type { Employee } from "@/lib/agile-types";
 
 interface AuthContextValue {
   session: Session | null;

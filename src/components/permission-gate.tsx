@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import type { Role } from "@/integrations/supabase/types";
+import type { Role } from "@/lib/agile-types";
 
 const HIERARCHY: Record<Role, number> = { admin: 3, editor: 2, viewer: 1 };
 

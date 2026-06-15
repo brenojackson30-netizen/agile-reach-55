@@ -1,4 +1,4 @@
-import type { Platform } from "@/integrations/supabase/types";
+import type { Platform } from "@/lib/agile-types";
 
 const PLATFORM_META: Record<Platform, { label: string; abbr: string; bg: string; fg: string }> = {
   instagram: { label: "Instagram", abbr: "IG", bg: "#E1306C", fg: "#fff" },

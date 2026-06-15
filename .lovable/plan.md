@@ -1,30 +1,20 @@
-## Botão "Atualizar preview"
+Plano para resolver a tela vazia de Clientes:
 
-Adicionar um botão fixo no topo de todas as telas autenticadas que recarrega os dados do Supabase sem precisar dar F5.
+1. Corrigir o bloqueio do banco
+- O preview está recebendo erro de permissão ao ler/cadastrar clientes: o banco bloqueou a execução das funções usadas pelas regras de acesso.
+- Vou ajustar as permissões das funções de acesso (`is_global_admin` e `has_client_access`) para que usuários autenticados consigam passar pelas políticas de segurança sem abrir os dados para usuários anônimos.
+- Isso deve fazer os clientes já existentes aparecerem para o admin e para usuários atribuídos.
 
-### O que vai ser feito
+2. Melhorar a tela de Clientes quando houver erro
+- Hoje a tela engole o erro e mostra “Nenhum cliente encontrado”, dando a impressão de que não existe nada.
+- Vou mostrar uma mensagem clara quando o carregamento falhar, com botão para tentar novamente.
 
-1. **Editar `src/routes/_authenticated/route.tsx`**
-   - Adicionar uma barra superior (topbar) acima do `<Outlet />`, alinhada à direita
-   - Incluir um botão "Atualizar" com ícone de refresh (lucide `RefreshCw`)
-   - Ao clicar:
-     - Chama `queryClient.invalidateQueries()` (invalida TODAS as queries do React Query — clientes, agenda, dashboard, etc.)
-     - Mostra ícone girando enquanto `isFetching > 0`
-     - Toast verde "Dados atualizados" ao concluir
+3. Adicionar cadastro de novo cliente
+- Adicionar botão “Novo cliente” no topo da tela de Clientes, visível para admin.
+- Abrir um modal simples com campos iniciais: nome, categoria, iniciais, cor e status.
+- Ao salvar, inserir o cliente no Supabase, atualizar a lista automaticamente e mostrar confirmação.
 
-2. **Comportamento**
-   - Botão visível em todas as rotas internas: `/dashboard`, `/clientes`, `/agenda`, `/equipe`, `/configuracoes`
-   - Não recarrega a página (mantém estado de UI, modais, scroll)
-   - Usa o `QueryClient` já existente via `useQueryClient()`
-
-### Detalhes técnicos
-
-- Componente novo inline na topbar usando `Button` do shadcn (`variant="ghost"`, `size="sm"`)
-- Hook `useIsFetching()` do `@tanstack/react-query` para animar o ícone (`animate-spin` quando > 0)
-- `toast.success("Dados atualizados")` via sonner (já instalado)
-- Sem alterações em queries existentes — apenas invalidação global
-
-### Escopo
-
-- Não mexe em RLS, schema, ou edge functions
-- Não cria realtime subscriptions (pedido foi botão manual)
+4. Manter segurança e escopo
+- O cadastro continuará restrito pelas políticas existentes: apenas admin poderá criar clientes.
+- Não vou tornar clientes públicos nem remover RLS.
+- Não vou alterar outras telas além do necessário para a tela de Clientes funcionar e cadastrar novos clientes.

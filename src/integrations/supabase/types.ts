@@ -16,25 +16,31 @@ export type Database = {
     Tables: {
       client_assignments: {
         Row: {
+          assigned_at: string
+          assigned_by: string | null
           client_id: string | null
           created_at: string | null
           employee_id: string | null
           id: string
-          role: string
+          role: string | null
         }
         Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
           client_id?: string | null
           created_at?: string | null
           employee_id?: string | null
           id?: string
-          role: string
+          role?: string | null
         }
         Update: {
+          assigned_at?: string
+          assigned_by?: string | null
           client_id?: string | null
           created_at?: string | null
           employee_id?: string | null
           id?: string
-          role?: string
+          role?: string | null
         }
         Relationships: [
           {
@@ -55,9 +61,13 @@ export type Database = {
       }
       clients: {
         Row: {
+          avatar_initials: string | null
           brand_color: string | null
+          category: string | null
+          color_hex: string | null
           created_at: string | null
           description: string | null
+          email: string | null
           facebook_url: string | null
           id: string
           instagram_url: string | null
@@ -65,14 +75,21 @@ export type Database = {
           linkedin_url: string | null
           logo_url: string | null
           name: string
+          notes: string | null
+          phone: string | null
+          status: string
           twitter_url: string | null
           updated_at: string | null
           website_url: string | null
         }
         Insert: {
+          avatar_initials?: string | null
           brand_color?: string | null
+          category?: string | null
+          color_hex?: string | null
           created_at?: string | null
           description?: string | null
+          email?: string | null
           facebook_url?: string | null
           id?: string
           instagram_url?: string | null
@@ -80,14 +97,21 @@ export type Database = {
           linkedin_url?: string | null
           logo_url?: string | null
           name: string
+          notes?: string | null
+          phone?: string | null
+          status?: string
           twitter_url?: string | null
           updated_at?: string | null
           website_url?: string | null
         }
         Update: {
+          avatar_initials?: string | null
           brand_color?: string | null
+          category?: string | null
+          color_hex?: string | null
           created_at?: string | null
           description?: string | null
+          email?: string | null
           facebook_url?: string | null
           id?: string
           instagram_url?: string | null
@@ -95,6 +119,9 @@ export type Database = {
           linkedin_url?: string | null
           logo_url?: string | null
           name?: string
+          notes?: string | null
+          phone?: string | null
+          status?: string
           twitter_url?: string | null
           updated_at?: string | null
           website_url?: string | null
@@ -103,6 +130,7 @@ export type Database = {
       }
       employees: {
         Row: {
+          avatar_initials: string | null
           avatar_url: string | null
           created_at: string | null
           email: string | null
@@ -110,10 +138,12 @@ export type Database = {
           is_active: boolean | null
           name: string
           role: string | null
+          status: string
           updated_at: string | null
           user_id: string | null
         }
         Insert: {
+          avatar_initials?: string | null
           avatar_url?: string | null
           created_at?: string | null
           email?: string | null
@@ -121,10 +151,12 @@ export type Database = {
           is_active?: boolean | null
           name: string
           role?: string | null
+          status?: string
           updated_at?: string | null
           user_id?: string | null
         }
         Update: {
+          avatar_initials?: string | null
           avatar_url?: string | null
           created_at?: string | null
           email?: string | null
@@ -132,6 +164,7 @@ export type Database = {
           is_active?: boolean | null
           name?: string
           role?: string | null
+          status?: string
           updated_at?: string | null
           user_id?: string | null
         }
@@ -141,23 +174,29 @@ export type Database = {
         Row: {
           completed_at: string | null
           completed_by: string | null
+          completed_date: string
           id: string
           notes: string | null
           post_id: string | null
+          scheduled_post_id: string | null
         }
         Insert: {
           completed_at?: string | null
           completed_by?: string | null
+          completed_date?: string
           id?: string
           notes?: string | null
           post_id?: string | null
+          scheduled_post_id?: string | null
         }
         Update: {
           completed_at?: string | null
           completed_by?: string | null
+          completed_date?: string
           id?: string
           notes?: string | null
           post_id?: string | null
+          scheduled_post_id?: string | null
         }
         Relationships: [
           {
@@ -174,42 +213,96 @@ export type Database = {
             referencedRelation: "scheduled_posts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "post_completions_scheduled_post_id_fkey"
+            columns: ["scheduled_post_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
         ]
       }
       scheduled_posts: {
         Row: {
           client_id: string | null
-          content: string
+          content: string | null
           created_at: string | null
           created_by: string | null
+          days: number[]
           id: string
           image_url: string | null
-          platform: string
-          scheduled_date: string
+          label: string | null
+          platform: string | null
+          post_time: string | null
+          post_type: string | null
+          profile_id: string | null
+          scheduled_date: string | null
           status: string | null
           updated_at: string | null
         }
         Insert: {
           client_id?: string | null
-          content: string
+          content?: string | null
           created_at?: string | null
           created_by?: string | null
+          days?: number[]
           id?: string
           image_url?: string | null
-          platform: string
-          scheduled_date: string
+          label?: string | null
+          platform?: string | null
+          post_time?: string | null
+          post_type?: string | null
+          profile_id?: string | null
+          scheduled_date?: string | null
           status?: string | null
           updated_at?: string | null
         }
         Update: {
           client_id?: string | null
-          content?: string
+          content?: string | null
           created_at?: string | null
           created_by?: string | null
+          days?: number[]
           id?: string
           image_url?: string | null
-          platform?: string
-          scheduled_date?: string
+          label?: string | null
+          platform?: string | null
+          post_time?: string | null
+          post_type?: string | null
+          profile_id?: string | null
+          scheduled_date?: string | null
           status?: string | null
           updated_at?: string | null
         }
@@ -226,6 +319,51 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_posts_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "social_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      social_profiles: {
+        Row: {
+          created_at: string
+          handle: string
+          id: string
+          platform: string
+          project_id: string
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          created_at?: string
+          handle: string
+          id?: string
+          platform: string
+          project_id: string
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          created_at?: string
+          handle?: string
+          id?: string
+          platform?: string
+          project_id?: string
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_profiles_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]

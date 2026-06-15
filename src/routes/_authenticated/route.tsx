@@ -1,7 +1,11 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { useIsFetching, useQueryClient } from "@tanstack/react-query";
+import { RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { AppSidebar, MobileTabBar } from "@/components/app-sidebar";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -49,9 +53,36 @@ function AuthenticatedLayout() {
     <div className="flex min-h-screen w-full" style={{ backgroundColor: "var(--background)" }}>
       <AppSidebar />
       <main className="flex-1 min-w-0 pb-[80px] md:pb-0">
+        <RefreshBar />
         <Outlet />
       </main>
       <MobileTabBar />
+    </div>
+  );
+}
+
+function RefreshBar() {
+  const queryClient = useQueryClient();
+  const isFetching = useIsFetching();
+  const handleRefresh = async () => {
+    await queryClient.invalidateQueries();
+    toast.success("Dados atualizados");
+  };
+  return (
+    <div
+      className="flex justify-end items-center px-4 py-2 border-b"
+      style={{ borderColor: "var(--border)", backgroundColor: "var(--background)" }}
+    >
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={handleRefresh}
+        disabled={isFetching > 0}
+        aria-label="Atualizar dados"
+      >
+        <RefreshCw className={`h-4 w-4 mr-2 ${isFetching > 0 ? "animate-spin" : ""}`} />
+        Atualizar
+      </Button>
     </div>
   );
 }

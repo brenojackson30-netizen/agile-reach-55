@@ -1,37 +1,30 @@
-## Problema
+## Botão "Atualizar preview"
 
-O preview está em branco porque `src/integrations/supabase/client.ts` referencia `localStorage` no escopo do módulo:
+Adicionar um botão fixo no topo de todas as telas autenticadas que recarrega os dados do Supabase sem precisar dar F5.
 
-```ts
-auth: { storage: localStorage, persistSession: true, autoRefreshToken: true }
-```
+### O que vai ser feito
 
-TanStack Start faz SSR — `localStorage` não existe no servidor — então o app quebra antes de montar (`ReferenceError: localStorage is not defined`), por isso `/clientes`, `/agenda`, etc. ficam vazios.
+1. **Editar `src/routes/_authenticated/route.tsx`**
+   - Adicionar uma barra superior (topbar) acima do `<Outlet />`, alinhada à direita
+   - Incluir um botão "Atualizar" com ícone de refresh (lucide `RefreshCw`)
+   - Ao clicar:
+     - Chama `queryClient.invalidateQueries()` (invalida TODAS as queries do React Query — clientes, agenda, dashboard, etc.)
+     - Mostra ícone girando enquanto `isFetching > 0`
+     - Toast verde "Dados atualizados" ao concluir
 
-## Correção
+2. **Comportamento**
+   - Botão visível em todas as rotas internas: `/dashboard`, `/clientes`, `/agenda`, `/equipe`, `/configuracoes`
+   - Não recarrega a página (mantém estado de UI, modais, scroll)
+   - Usa o `QueryClient` já existente via `useQueryClient()`
 
-Guardar o acesso a `localStorage` por ambiente em `src/integrations/supabase/client.ts`:
+### Detalhes técnicos
 
-```ts
-const isBrowser = typeof window !== "undefined";
+- Componente novo inline na topbar usando `Button` do shadcn (`variant="ghost"`, `size="sm"`)
+- Hook `useIsFetching()` do `@tanstack/react-query` para animar o ícone (`animate-spin` quando > 0)
+- `toast.success("Dados atualizados")` via sonner (já instalado)
+- Sem alterações em queries existentes — apenas invalidação global
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    storage: isBrowser ? window.localStorage : undefined,
-    persistSession: isBrowser,
-    autoRefreshToken: isBrowser,
-  },
-});
-```
+### Escopo
 
-No SSR o cliente fica stateless; no browser a sessão persiste normalmente via `localStorage`.
-
-## Verificação
-
-- Recarregar `/` — deve renderizar.
-- Abrir `/auth`, logar, e checar `/dashboard`, `/clientes`, `/agenda`, `/equipe`, `/configuracoes`.
-- Confirmar que o erro `localStorage is not defined` sumiu dos logs.
-
-## Próximo passo
-
-Esse fix de 1 arquivo desbloqueia o preview. Assim que voltar a renderizar, eu consigo ver o que ainda falta em cada tela e abro um plano específico por funcionalidade pendente — qualquer trabalho de UI/feature está bloqueado por esse erro de SSR agora.
+- Não mexe em RLS, schema, ou edge functions
+- Não cria realtime subscriptions (pedido foi botão manual)

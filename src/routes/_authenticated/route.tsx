@@ -1,7 +1,11 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { useIsFetching, useQueryClient } from "@tanstack/react-query";
+import { RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 import { AppSidebar, MobileTabBar } from "@/components/app-sidebar";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,

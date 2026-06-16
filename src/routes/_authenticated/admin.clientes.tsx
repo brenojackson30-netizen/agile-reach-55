@@ -5,7 +5,7 @@ import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Client, Project, ScheduledPost, SocialProfile } from "@/lib/agile-types";
 
-export const Route = createFileRoute("/_authenticated/clientes")({
+export const Route = createFileRoute("/_authenticated/admin/clientes")({
   component: ClientesPage,
 });
 
@@ -104,7 +104,7 @@ function ClientesPage() {
           {filtered.map(({ client, projectCount, dailyPosts }) => (
             <Link
               key={client.id}
-              to="/clientes/$id"
+              to="/admin/clientes/$id"
               params={{ id: client.id }}
               className="rounded-xl border p-4 transition-colors hover:bg-[var(--card-hover)]"
               style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}

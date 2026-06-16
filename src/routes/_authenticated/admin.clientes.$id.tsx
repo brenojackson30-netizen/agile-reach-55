@@ -6,7 +6,7 @@ import { PlatformBadge } from "@/components/platform-badge";
 import { WEEKDAYS_SHORT } from "@/lib/utils-date";
 import type { Client, Project, ScheduledPost, SocialProfile } from "@/lib/agile-types";
 
-export const Route = createFileRoute("/_authenticated/clientes/$id")({
+export const Route = createFileRoute("/_authenticated/admin/clientes/$id")({
   component: ClienteDetail,
 });
 
@@ -48,7 +48,7 @@ function ClienteDetail() {
     return (
       <div className="p-8 text-center">
         <p style={{ color: "var(--muted-foreground)" }}>Cliente não encontrado.</p>
-        <Link to="/clientes" className="text-sm" style={{ color: "var(--accent)" }}>
+        <Link to="/admin/clientes" className="text-sm" style={{ color: "var(--accent)" }}>
           Voltar
         </Link>
       </div>
@@ -60,7 +60,7 @@ function ClienteDetail() {
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto">
       <Link
-        to="/clientes"
+        to="/admin/clientes"
         className="inline-flex items-center gap-2 text-sm mb-4 hover:text-[var(--accent)]"
         style={{ color: "var(--muted-foreground)" }}
       >

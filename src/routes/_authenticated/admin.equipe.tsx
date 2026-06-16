@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import type { Client, ClientAssignment, Employee, Role } from "@/lib/agile-types";
 
-export const Route = createFileRoute("/_authenticated/equipe")({
+export const Route = createFileRoute("/_authenticated/admin/equipe")({
   component: EquipePage,
 });
 
@@ -19,7 +19,7 @@ function EquipePage() {
 
   useEffect(() => {
     if (!loading && employee && employee.role !== "admin") {
-      navigate({ to: "/dashboard", replace: true });
+      navigate({ to: "/admin/dashboard", replace: true });
     }
   }, [employee, loading, navigate]);
 

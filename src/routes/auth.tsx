@@ -19,7 +19,7 @@ function AuthPage() {
 
   useEffect(() => {
     if (!loading && session) {
-      navigate({ to: "/dashboard", replace: true });
+      navigate({ to: "/app/agenda", replace: true });
     }
   }, [session, loading, navigate]);
 
@@ -33,7 +33,7 @@ function AuthPage() {
       return;
     }
     toast.success("Bem-vindo!");
-    navigate({ to: "/dashboard", replace: true });
+    navigate({ to: "/app/agenda", replace: true });
   };
 
   return (

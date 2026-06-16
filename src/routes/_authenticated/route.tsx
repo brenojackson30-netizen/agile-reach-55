@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useIsFetching, useQueryClient } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
@@ -15,12 +15,24 @@ export const Route = createFileRoute("/_authenticated")({
 function AuthenticatedLayout() {
   const { session, employee, loading } = useAuth();
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   useEffect(() => {
     if (!loading && !session) {
       navigate({ to: "/auth", replace: true });
     }
   }, [session, loading, navigate]);
+
+  // Aplica separação de painéis por papel.
+  useEffect(() => {
+    if (!employee) return;
+    const isAdmin = employee.role === "admin";
+    if (isAdmin && pathname.startsWith("/app")) {
+      navigate({ to: "/admin/dashboard", replace: true });
+    } else if (!isAdmin && pathname.startsWith("/admin")) {
+      navigate({ to: "/app/agenda", replace: true });
+    }
+  }, [employee, pathname, navigate]);
 
   if (loading || !session) {
     return (

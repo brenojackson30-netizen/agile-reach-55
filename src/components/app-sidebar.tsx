@@ -7,22 +7,36 @@ import {
   Settings,
   LogOut,
   Zap,
+  UserCircle,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
-const ITEMS = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, requireAdmin: false },
-  { to: "/clientes", label: "Clientes", icon: Users, requireAdmin: false },
-  { to: "/agenda", label: "Agenda", icon: Calendar, requireAdmin: false },
-  { to: "/equipe", label: "Equipe", icon: UsersRound, requireAdmin: true },
-  { to: "/configuracoes", label: "Configurações", icon: Settings, requireAdmin: false },
+type NavItem = { to: string; label: string; icon: typeof LayoutDashboard };
+
+const ADMIN_ITEMS: NavItem[] = [
+  { to: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/admin/clientes", label: "Clientes", icon: Users },
+  { to: "/admin/agenda", label: "Agenda", icon: Calendar },
+  { to: "/admin/equipe", label: "Equipe", icon: UsersRound },
+  { to: "/admin/configuracoes", label: "Configurações", icon: Settings },
 ];
+
+const USER_ITEMS: NavItem[] = [
+  { to: "/app/agenda", label: "Hoje", icon: Calendar },
+  { to: "/app/clientes", label: "Clientes", icon: Users },
+  { to: "/app/perfil", label: "Perfil", icon: UserCircle },
+];
+
+function useNavItems(): { items: NavItem[]; isAdmin: boolean } {
+  const { employee } = useAuth();
+  const isAdmin = employee?.role === "admin";
+  return { items: isAdmin ? ADMIN_ITEMS : USER_ITEMS, isAdmin };
+}
 
 export function AppSidebar() {
   const { employee, signOut } = useAuth();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-
-  const items = ITEMS.filter((i) => !i.requireAdmin || employee?.role === "admin");
+  const { items, isAdmin } = useNavItems();
 
   return (
     <aside
@@ -34,10 +48,22 @@ export function AppSidebar() {
       }}
       aria-label="Navegação principal"
     >
-      <div className="flex items-center gap-2 px-5 h-16 border-b" style={{ borderColor: "var(--border-subtle)" }}>
+      <div
+        className="flex items-center gap-2 px-5 h-16 border-b"
+        style={{ borderColor: "var(--border-subtle)" }}
+      >
         <Zap className="size-5" style={{ color: "var(--accent)" }} />
         <span className="text-lg font-bold tracking-wide" style={{ color: "var(--accent)" }}>
           AGILE
+        </span>
+        <span
+          className="ml-auto text-[10px] font-bold uppercase px-1.5 py-0.5 rounded"
+          style={{
+            backgroundColor: isAdmin ? "var(--accent-bg)" : "var(--secondary)",
+            color: isAdmin ? "var(--accent)" : "var(--muted-foreground)",
+          }}
+        >
+          {isAdmin ? "Admin" : "Equipe"}
         </span>
       </div>
 
@@ -98,9 +124,8 @@ export function AppSidebar() {
 }
 
 export function MobileTabBar() {
-  const { employee } = useAuth();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const items = ITEMS.filter((i) => !i.requireAdmin || employee?.role === "admin");
+  const { items } = useNavItems();
 
   return (
     <nav

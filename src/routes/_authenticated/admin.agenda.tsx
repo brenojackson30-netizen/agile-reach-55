@@ -12,7 +12,7 @@ import {
 } from "@/lib/utils-date";
 import type { Client, Project, ScheduledPost, SocialProfile } from "@/lib/agile-types";
 
-export const Route = createFileRoute("/_authenticated/agenda")({
+export const Route = createFileRoute("/_authenticated/admin/agenda")({
   component: AgendaPage,
 });
 

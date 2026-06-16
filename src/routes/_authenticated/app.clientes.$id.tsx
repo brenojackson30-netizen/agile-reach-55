@@ -6,15 +6,15 @@ import { PlatformBadge } from "@/components/platform-badge";
 import { WEEKDAYS_SHORT } from "@/lib/utils-date";
 import type { Client, Project, ScheduledPost, SocialProfile } from "@/lib/agile-types";
 
-export const Route = createFileRoute("/_authenticated/clientes/$id")({
-  component: ClienteDetail,
+export const Route = createFileRoute("/_authenticated/app/clientes/$id")({
+  component: AppClienteDetail,
 });
 
-function ClienteDetail() {
+function AppClienteDetail() {
   const { id } = Route.useParams();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["client-detail", id],
+    queryKey: ["app-client-detail", id],
     queryFn: async () => {
       const [c, p, sp, posts] = await Promise.all([
         supabase.from("clients").select("*").eq("id", id).maybeSingle(),
@@ -24,9 +24,13 @@ function ClienteDetail() {
       ]);
       const projects = (p.data ?? []) as Project[];
       const projectIds = new Set(projects.map((x) => x.id));
-      const profiles = ((sp.data ?? []) as SocialProfile[]).filter((x) => projectIds.has(x.project_id));
+      const profiles = ((sp.data ?? []) as SocialProfile[]).filter((x) =>
+        projectIds.has(x.project_id)
+      );
       const profileIds = new Set(profiles.map((x) => x.id));
-      const schedule = ((posts.data ?? []) as ScheduledPost[]).filter((x) => profileIds.has(x.profile_id));
+      const schedule = ((posts.data ?? []) as ScheduledPost[]).filter((x) =>
+        profileIds.has(x.profile_id)
+      );
       return {
         client: (c.data as Client | null) ?? null,
         projects,
@@ -48,7 +52,7 @@ function ClienteDetail() {
     return (
       <div className="p-8 text-center">
         <p style={{ color: "var(--muted-foreground)" }}>Cliente não encontrado.</p>
-        <Link to="/clientes" className="text-sm" style={{ color: "var(--accent)" }}>
+        <Link to="/app/clientes" className="text-sm" style={{ color: "var(--accent)" }}>
           Voltar
         </Link>
       </div>
@@ -60,7 +64,7 @@ function ClienteDetail() {
   return (
     <div className="p-4 md:p-8 max-w-5xl mx-auto">
       <Link
-        to="/clientes"
+        to="/app/clientes"
         className="inline-flex items-center gap-2 text-sm mb-4 hover:text-[var(--accent)]"
         style={{ color: "var(--muted-foreground)" }}
       >
@@ -85,15 +89,6 @@ function ClienteDetail() {
             {c.category || "—"}
           </p>
         </div>
-        <span
-          className="text-xs px-2 py-1 rounded-md"
-          style={{
-            backgroundColor: c.status === "active" ? "var(--success-bg)" : "var(--secondary)",
-            color: c.status === "active" ? "var(--success)" : "var(--muted-foreground)",
-          }}
-        >
-          {c.status === "active" ? "Ativo" : "Inativo"}
-        </span>
       </header>
 
       <section className="space-y-4">
@@ -130,7 +125,10 @@ function ClienteDetail() {
                         <li
                           key={sp.id}
                           className="rounded-lg border p-3"
-                          style={{ borderColor: "var(--border-subtle)", backgroundColor: "var(--background)" }}
+                          style={{
+                            borderColor: "var(--border-subtle)",
+                            backgroundColor: "var(--background)",
+                          }}
                         >
                           <div className="flex items-center gap-2 mb-2">
                             <PlatformBadge platform={sp.platform} />
@@ -142,7 +140,7 @@ function ClienteDetail() {
                                 href={sp.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                aria-label={`Abrir ${sp.handle} em nova aba`}
+                                aria-label={`Abrir ${sp.handle}`}
                                 className="ml-auto"
                                 style={{ color: "var(--muted-foreground)" }}
                               >

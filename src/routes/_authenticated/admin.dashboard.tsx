@@ -23,7 +23,7 @@ import type {
   PostCompletion,
 } from "@/lib/agile-types";
 
-export const Route = createFileRoute("/_authenticated/dashboard")({
+export const Route = createFileRoute("/_authenticated/admin/dashboard")({
   component: DashboardPage,
 });
 

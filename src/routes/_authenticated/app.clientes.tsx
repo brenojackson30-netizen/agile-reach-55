@@ -5,15 +5,15 @@ import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Client, Project, ScheduledPost, SocialProfile } from "@/lib/agile-types";
 
-export const Route = createFileRoute("/_authenticated/clientes")({
-  component: ClientesPage,
+export const Route = createFileRoute("/_authenticated/app/clientes")({
+  component: AppClientesPage,
 });
 
-function ClientesPage() {
+function AppClientesPage() {
   const [search, setSearch] = useState("");
 
   const { data, isLoading } = useQuery({
-    queryKey: ["clients-list"],
+    queryKey: ["app-clients-list"],
     queryFn: async () => {
       const [c, p, sp, posts] = await Promise.all([
         supabase.from("clients").select("*"),
@@ -37,20 +37,24 @@ function ClientesPage() {
       .filter((c) => (term ? c.name.toLowerCase().includes(term) : true))
       .map((c) => {
         const projs = data.projects.filter((p) => p.client_id === c.id);
-        const profIds = data.profiles.filter((sp) => projs.some((p) => p.id === sp.project_id)).map((sp) => sp.id);
-        const dailyPosts = data.posts.filter((po) => profIds.includes(po.profile_id)).length;
+        const profIds = data.profiles
+          .filter((sp) => projs.some((p) => p.id === sp.project_id))
+          .map((sp) => sp.id);
+        const dailyPosts = data.posts.filter((po) =>
+          profIds.includes(po.profile_id)
+        ).length;
         return { client: c, projectCount: projs.length, dailyPosts };
       });
   }, [data, search]);
 
   return (
-    <div className="p-4 md:p-8 max-w-7xl mx-auto">
+    <div className="p-4 md:p-8 max-w-5xl mx-auto">
       <header className="mb-6">
         <h1 className="text-2xl md:text-3xl font-bold" style={{ color: "var(--foreground)" }}>
-          Clientes
+          Meus clientes
         </h1>
         <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>
-          Apenas os clientes atribuídos a você aparecem aqui.
+          Clientes atribuídos a você.
         </p>
       </header>
 
@@ -78,11 +82,11 @@ function ClientesPage() {
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {[...Array(6)].map((_, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[...Array(4)].map((_, i) => (
             <div
               key={i}
-              className="h-32 rounded-xl animate-pulse"
+              className="h-28 rounded-xl animate-pulse"
               style={{ backgroundColor: "var(--card)" }}
             />
           ))}
@@ -93,18 +97,18 @@ function ClientesPage() {
           style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
         >
           <p className="text-sm font-medium" style={{ color: "var(--foreground)" }}>
-            Nenhum cliente encontrado
+            Nenhum cliente atribuído
           </p>
           <p className="text-xs mt-1" style={{ color: "var(--muted-foreground)" }}>
             Peça ao admin para te atribuir clientes.
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {filtered.map(({ client, projectCount, dailyPosts }) => (
             <Link
               key={client.id}
-              to="/clientes/$id"
+              to="/app/clientes/$id"
               params={{ id: client.id }}
               className="rounded-xl border p-4 transition-colors hover:bg-[var(--card-hover)]"
               style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
@@ -132,16 +136,6 @@ function ClientesPage() {
                 </span>
                 <span>
                   <strong style={{ color: "var(--foreground)" }}>{dailyPosts}</strong> posts/dia
-                </span>
-                <span
-                  className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-md"
-                  style={{
-                    backgroundColor:
-                      client.status === "active" ? "var(--success-bg)" : "var(--secondary)",
-                    color: client.status === "active" ? "var(--success)" : "var(--muted-foreground)",
-                  }}
-                >
-                  {client.status === "active" ? "Ativo" : "Inativo"}
                 </span>
               </div>
             </Link>

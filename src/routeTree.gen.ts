@@ -12,12 +12,16 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as AuthenticatedEquipeRouteImport } from './routes/_authenticated/equipe'
-import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
-import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
-import { Route as AuthenticatedClientesRouteImport } from './routes/_authenticated/clientes'
-import { Route as AuthenticatedAgendaRouteImport } from './routes/_authenticated/agenda'
-import { Route as AuthenticatedClientesIdRouteImport } from './routes/_authenticated/clientes.$id'
+import { Route as AuthenticatedAppPerfilRouteImport } from './routes/_authenticated/app.perfil'
+import { Route as AuthenticatedAppClientesRouteImport } from './routes/_authenticated/app.clientes'
+import { Route as AuthenticatedAppAgendaRouteImport } from './routes/_authenticated/app.agenda'
+import { Route as AuthenticatedAdminEquipeRouteImport } from './routes/_authenticated/admin.equipe'
+import { Route as AuthenticatedAdminDashboardRouteImport } from './routes/_authenticated/admin.dashboard'
+import { Route as AuthenticatedAdminConfiguracoesRouteImport } from './routes/_authenticated/admin.configuracoes'
+import { Route as AuthenticatedAdminClientesRouteImport } from './routes/_authenticated/admin.clientes'
+import { Route as AuthenticatedAdminAgendaRouteImport } from './routes/_authenticated/admin.agenda'
+import { Route as AuthenticatedAppClientesIdRouteImport } from './routes/_authenticated/app.clientes.$id'
+import { Route as AuthenticatedAdminClientesIdRouteImport } from './routes/_authenticated/admin.clientes.$id'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -33,102 +37,153 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedEquipeRoute = AuthenticatedEquipeRouteImport.update({
-  id: '/equipe',
-  path: '/equipe',
+const AuthenticatedAppPerfilRoute = AuthenticatedAppPerfilRouteImport.update({
+  id: '/app/perfil',
+  path: '/app/perfil',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedConfiguracoesRoute =
-  AuthenticatedConfiguracoesRouteImport.update({
-    id: '/configuracoes',
-    path: '/configuracoes',
+const AuthenticatedAppClientesRoute =
+  AuthenticatedAppClientesRouteImport.update({
+    id: '/app/clientes',
+    path: '/app/clientes',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const AuthenticatedClientesRoute = AuthenticatedClientesRouteImport.update({
-  id: '/clientes',
-  path: '/clientes',
+const AuthenticatedAppAgendaRoute = AuthenticatedAppAgendaRouteImport.update({
+  id: '/app/agenda',
+  path: '/app/agenda',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedAgendaRoute = AuthenticatedAgendaRouteImport.update({
-  id: '/agenda',
-  path: '/agenda',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedClientesIdRoute = AuthenticatedClientesIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AuthenticatedClientesRoute,
-} as any)
+const AuthenticatedAdminEquipeRoute =
+  AuthenticatedAdminEquipeRouteImport.update({
+    id: '/admin/equipe',
+    path: '/admin/equipe',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminDashboardRoute =
+  AuthenticatedAdminDashboardRouteImport.update({
+    id: '/admin/dashboard',
+    path: '/admin/dashboard',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminConfiguracoesRoute =
+  AuthenticatedAdminConfiguracoesRouteImport.update({
+    id: '/admin/configuracoes',
+    path: '/admin/configuracoes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminClientesRoute =
+  AuthenticatedAdminClientesRouteImport.update({
+    id: '/admin/clientes',
+    path: '/admin/clientes',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAdminAgendaRoute =
+  AuthenticatedAdminAgendaRouteImport.update({
+    id: '/admin/agenda',
+    path: '/admin/agenda',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedAppClientesIdRoute =
+  AuthenticatedAppClientesIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedAppClientesRoute,
+  } as any)
+const AuthenticatedAdminClientesIdRoute =
+  AuthenticatedAdminClientesIdRouteImport.update({
+    id: '/$id',
+    path: '/$id',
+    getParentRoute: () => AuthenticatedAdminClientesRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/agenda': typeof AuthenticatedAgendaRoute
-  '/clientes': typeof AuthenticatedClientesRouteWithChildren
-  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
-  '/equipe': typeof AuthenticatedEquipeRoute
-  '/clientes/$id': typeof AuthenticatedClientesIdRoute
+  '/admin/agenda': typeof AuthenticatedAdminAgendaRoute
+  '/admin/clientes': typeof AuthenticatedAdminClientesRouteWithChildren
+  '/admin/configuracoes': typeof AuthenticatedAdminConfiguracoesRoute
+  '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
+  '/app/agenda': typeof AuthenticatedAppAgendaRoute
+  '/app/clientes': typeof AuthenticatedAppClientesRouteWithChildren
+  '/app/perfil': typeof AuthenticatedAppPerfilRoute
+  '/admin/clientes/$id': typeof AuthenticatedAdminClientesIdRoute
+  '/app/clientes/$id': typeof AuthenticatedAppClientesIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
-  '/agenda': typeof AuthenticatedAgendaRoute
-  '/clientes': typeof AuthenticatedClientesRouteWithChildren
-  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
-  '/dashboard': typeof AuthenticatedDashboardRoute
-  '/equipe': typeof AuthenticatedEquipeRoute
-  '/clientes/$id': typeof AuthenticatedClientesIdRoute
+  '/admin/agenda': typeof AuthenticatedAdminAgendaRoute
+  '/admin/clientes': typeof AuthenticatedAdminClientesRouteWithChildren
+  '/admin/configuracoes': typeof AuthenticatedAdminConfiguracoesRoute
+  '/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/admin/equipe': typeof AuthenticatedAdminEquipeRoute
+  '/app/agenda': typeof AuthenticatedAppAgendaRoute
+  '/app/clientes': typeof AuthenticatedAppClientesRouteWithChildren
+  '/app/perfil': typeof AuthenticatedAppPerfilRoute
+  '/admin/clientes/$id': typeof AuthenticatedAdminClientesIdRoute
+  '/app/clientes/$id': typeof AuthenticatedAppClientesIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
-  '/_authenticated/agenda': typeof AuthenticatedAgendaRoute
-  '/_authenticated/clientes': typeof AuthenticatedClientesRouteWithChildren
-  '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
-  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
-  '/_authenticated/equipe': typeof AuthenticatedEquipeRoute
-  '/_authenticated/clientes/$id': typeof AuthenticatedClientesIdRoute
+  '/_authenticated/admin/agenda': typeof AuthenticatedAdminAgendaRoute
+  '/_authenticated/admin/clientes': typeof AuthenticatedAdminClientesRouteWithChildren
+  '/_authenticated/admin/configuracoes': typeof AuthenticatedAdminConfiguracoesRoute
+  '/_authenticated/admin/dashboard': typeof AuthenticatedAdminDashboardRoute
+  '/_authenticated/admin/equipe': typeof AuthenticatedAdminEquipeRoute
+  '/_authenticated/app/agenda': typeof AuthenticatedAppAgendaRoute
+  '/_authenticated/app/clientes': typeof AuthenticatedAppClientesRouteWithChildren
+  '/_authenticated/app/perfil': typeof AuthenticatedAppPerfilRoute
+  '/_authenticated/admin/clientes/$id': typeof AuthenticatedAdminClientesIdRoute
+  '/_authenticated/app/clientes/$id': typeof AuthenticatedAppClientesIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/auth'
-    | '/agenda'
-    | '/clientes'
-    | '/configuracoes'
-    | '/dashboard'
-    | '/equipe'
-    | '/clientes/$id'
+    | '/admin/agenda'
+    | '/admin/clientes'
+    | '/admin/configuracoes'
+    | '/admin/dashboard'
+    | '/admin/equipe'
+    | '/app/agenda'
+    | '/app/clientes'
+    | '/app/perfil'
+    | '/admin/clientes/$id'
+    | '/app/clientes/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
-    | '/agenda'
-    | '/clientes'
-    | '/configuracoes'
-    | '/dashboard'
-    | '/equipe'
-    | '/clientes/$id'
+    | '/admin/agenda'
+    | '/admin/clientes'
+    | '/admin/configuracoes'
+    | '/admin/dashboard'
+    | '/admin/equipe'
+    | '/app/agenda'
+    | '/app/clientes'
+    | '/app/perfil'
+    | '/admin/clientes/$id'
+    | '/app/clientes/$id'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
-    | '/_authenticated/agenda'
-    | '/_authenticated/clientes'
-    | '/_authenticated/configuracoes'
-    | '/_authenticated/dashboard'
-    | '/_authenticated/equipe'
-    | '/_authenticated/clientes/$id'
+    | '/_authenticated/admin/agenda'
+    | '/_authenticated/admin/clientes'
+    | '/_authenticated/admin/configuracoes'
+    | '/_authenticated/admin/dashboard'
+    | '/_authenticated/admin/equipe'
+    | '/_authenticated/app/agenda'
+    | '/_authenticated/app/clientes'
+    | '/_authenticated/app/perfil'
+    | '/_authenticated/admin/clientes/$id'
+    | '/_authenticated/app/clientes/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -160,78 +215,127 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/equipe': {
-      id: '/_authenticated/equipe'
-      path: '/equipe'
-      fullPath: '/equipe'
-      preLoaderRoute: typeof AuthenticatedEquipeRouteImport
+    '/_authenticated/app/perfil': {
+      id: '/_authenticated/app/perfil'
+      path: '/app/perfil'
+      fullPath: '/app/perfil'
+      preLoaderRoute: typeof AuthenticatedAppPerfilRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/dashboard': {
-      id: '/_authenticated/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+    '/_authenticated/app/clientes': {
+      id: '/_authenticated/app/clientes'
+      path: '/app/clientes'
+      fullPath: '/app/clientes'
+      preLoaderRoute: typeof AuthenticatedAppClientesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/configuracoes': {
-      id: '/_authenticated/configuracoes'
-      path: '/configuracoes'
-      fullPath: '/configuracoes'
-      preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
+    '/_authenticated/app/agenda': {
+      id: '/_authenticated/app/agenda'
+      path: '/app/agenda'
+      fullPath: '/app/agenda'
+      preLoaderRoute: typeof AuthenticatedAppAgendaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/clientes': {
-      id: '/_authenticated/clientes'
-      path: '/clientes'
-      fullPath: '/clientes'
-      preLoaderRoute: typeof AuthenticatedClientesRouteImport
+    '/_authenticated/admin/equipe': {
+      id: '/_authenticated/admin/equipe'
+      path: '/admin/equipe'
+      fullPath: '/admin/equipe'
+      preLoaderRoute: typeof AuthenticatedAdminEquipeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/agenda': {
-      id: '/_authenticated/agenda'
-      path: '/agenda'
-      fullPath: '/agenda'
-      preLoaderRoute: typeof AuthenticatedAgendaRouteImport
+    '/_authenticated/admin/dashboard': {
+      id: '/_authenticated/admin/dashboard'
+      path: '/admin/dashboard'
+      fullPath: '/admin/dashboard'
+      preLoaderRoute: typeof AuthenticatedAdminDashboardRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/clientes/$id': {
-      id: '/_authenticated/clientes/$id'
+    '/_authenticated/admin/configuracoes': {
+      id: '/_authenticated/admin/configuracoes'
+      path: '/admin/configuracoes'
+      fullPath: '/admin/configuracoes'
+      preLoaderRoute: typeof AuthenticatedAdminConfiguracoesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/clientes': {
+      id: '/_authenticated/admin/clientes'
+      path: '/admin/clientes'
+      fullPath: '/admin/clientes'
+      preLoaderRoute: typeof AuthenticatedAdminClientesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/admin/agenda': {
+      id: '/_authenticated/admin/agenda'
+      path: '/admin/agenda'
+      fullPath: '/admin/agenda'
+      preLoaderRoute: typeof AuthenticatedAdminAgendaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/app/clientes/$id': {
+      id: '/_authenticated/app/clientes/$id'
       path: '/$id'
-      fullPath: '/clientes/$id'
-      preLoaderRoute: typeof AuthenticatedClientesIdRouteImport
-      parentRoute: typeof AuthenticatedClientesRoute
+      fullPath: '/app/clientes/$id'
+      preLoaderRoute: typeof AuthenticatedAppClientesIdRouteImport
+      parentRoute: typeof AuthenticatedAppClientesRoute
+    }
+    '/_authenticated/admin/clientes/$id': {
+      id: '/_authenticated/admin/clientes/$id'
+      path: '/$id'
+      fullPath: '/admin/clientes/$id'
+      preLoaderRoute: typeof AuthenticatedAdminClientesIdRouteImport
+      parentRoute: typeof AuthenticatedAdminClientesRoute
     }
   }
 }
 
-interface AuthenticatedClientesRouteChildren {
-  AuthenticatedClientesIdRoute: typeof AuthenticatedClientesIdRoute
+interface AuthenticatedAdminClientesRouteChildren {
+  AuthenticatedAdminClientesIdRoute: typeof AuthenticatedAdminClientesIdRoute
 }
 
-const AuthenticatedClientesRouteChildren: AuthenticatedClientesRouteChildren = {
-  AuthenticatedClientesIdRoute: AuthenticatedClientesIdRoute,
+const AuthenticatedAdminClientesRouteChildren: AuthenticatedAdminClientesRouteChildren =
+  {
+    AuthenticatedAdminClientesIdRoute: AuthenticatedAdminClientesIdRoute,
+  }
+
+const AuthenticatedAdminClientesRouteWithChildren =
+  AuthenticatedAdminClientesRoute._addFileChildren(
+    AuthenticatedAdminClientesRouteChildren,
+  )
+
+interface AuthenticatedAppClientesRouteChildren {
+  AuthenticatedAppClientesIdRoute: typeof AuthenticatedAppClientesIdRoute
 }
 
-const AuthenticatedClientesRouteWithChildren =
-  AuthenticatedClientesRoute._addFileChildren(
-    AuthenticatedClientesRouteChildren,
+const AuthenticatedAppClientesRouteChildren: AuthenticatedAppClientesRouteChildren =
+  {
+    AuthenticatedAppClientesIdRoute: AuthenticatedAppClientesIdRoute,
+  }
+
+const AuthenticatedAppClientesRouteWithChildren =
+  AuthenticatedAppClientesRoute._addFileChildren(
+    AuthenticatedAppClientesRouteChildren,
   )
 
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedAgendaRoute: typeof AuthenticatedAgendaRoute
-  AuthenticatedClientesRoute: typeof AuthenticatedClientesRouteWithChildren
-  AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
-  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
-  AuthenticatedEquipeRoute: typeof AuthenticatedEquipeRoute
+  AuthenticatedAdminAgendaRoute: typeof AuthenticatedAdminAgendaRoute
+  AuthenticatedAdminClientesRoute: typeof AuthenticatedAdminClientesRouteWithChildren
+  AuthenticatedAdminConfiguracoesRoute: typeof AuthenticatedAdminConfiguracoesRoute
+  AuthenticatedAdminDashboardRoute: typeof AuthenticatedAdminDashboardRoute
+  AuthenticatedAdminEquipeRoute: typeof AuthenticatedAdminEquipeRoute
+  AuthenticatedAppAgendaRoute: typeof AuthenticatedAppAgendaRoute
+  AuthenticatedAppClientesRoute: typeof AuthenticatedAppClientesRouteWithChildren
+  AuthenticatedAppPerfilRoute: typeof AuthenticatedAppPerfilRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedAgendaRoute: AuthenticatedAgendaRoute,
-  AuthenticatedClientesRoute: AuthenticatedClientesRouteWithChildren,
-  AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
-  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
-  AuthenticatedEquipeRoute: AuthenticatedEquipeRoute,
+  AuthenticatedAdminAgendaRoute: AuthenticatedAdminAgendaRoute,
+  AuthenticatedAdminClientesRoute: AuthenticatedAdminClientesRouteWithChildren,
+  AuthenticatedAdminConfiguracoesRoute: AuthenticatedAdminConfiguracoesRoute,
+  AuthenticatedAdminDashboardRoute: AuthenticatedAdminDashboardRoute,
+  AuthenticatedAdminEquipeRoute: AuthenticatedAdminEquipeRoute,
+  AuthenticatedAppAgendaRoute: AuthenticatedAppAgendaRoute,
+  AuthenticatedAppClientesRoute: AuthenticatedAppClientesRouteWithChildren,
+  AuthenticatedAppPerfilRoute: AuthenticatedAppPerfilRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

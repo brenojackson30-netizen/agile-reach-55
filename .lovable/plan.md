@@ -1,20 +1,58 @@
-Plano para resolver a tela vazia de Clientes:
+## Painéis separados para Admin e Usuário
 
-1. Corrigir o bloqueio do banco
-- O preview está recebendo erro de permissão ao ler/cadastrar clientes: o banco bloqueou a execução das funções usadas pelas regras de acesso.
-- Vou ajustar as permissões das funções de acesso (`is_global_admin` e `has_client_access`) para que usuários autenticados consigam passar pelas políticas de segurança sem abrir os dados para usuários anônimos.
-- Isso deve fazer os clientes já existentes aparecerem para o admin e para usuários atribuídos.
+### Estrutura de rotas
 
-2. Melhorar a tela de Clientes quando houver erro
-- Hoje a tela engole o erro e mostra “Nenhum cliente encontrado”, dando a impressão de que não existe nada.
-- Vou mostrar uma mensagem clara quando o carregamento falhar, com botão para tentar novamente.
+```text
+/auth                         → login (público)
+/admin/*                      → área do administrador
+  /admin/dashboard            → visão geral global
+  /admin/clientes             → gestão de clientes (cadastrar, editar, atribuir)
+  /admin/clientes/:id         → detalhe do cliente
+  /admin/agenda               → agenda geral
+  /admin/equipe               → gestão de funcionários e atribuições
+  /admin/configuracoes        → configurações globais
 
-3. Adicionar cadastro de novo cliente
-- Adicionar botão “Novo cliente” no topo da tela de Clientes, visível para admin.
-- Abrir um modal simples com campos iniciais: nome, categoria, iniciais, cor e status.
-- Ao salvar, inserir o cliente no Supabase, atualizar a lista automaticamente e mostrar confirmação.
+/app/*                        → área do usuário (funcionário)
+  /app/agenda                 → tela inicial: posts do dia dele
+  /app/clientes               → clientes atribuídos a ele
+  /app/clientes/:id           → detalhe (somente do que tem acesso)
+  /app/perfil                 → configurações pessoais
+```
 
-4. Manter segurança e escopo
-- O cadastro continuará restrito pelas políticas existentes: apenas admin poderá criar clientes.
-- Não vou tornar clientes públicos nem remover RLS.
-- Não vou alterar outras telas além do necessário para a tela de Clientes funcionar e cadastrar novos clientes.
+### Redirecionamento por papel
+
+- Após login (ou ao acessar `/`):
+  - `admin` → `/admin/dashboard`
+  - demais papéis → `/app/agenda`
+- Não-admin tentando `/admin/*` → vai para `/app/agenda`.
+- Admin tentando `/app/*` → vai para `/admin/dashboard`.
+- URLs antigas (`/dashboard`, `/clientes`...) redirecionam para a área certa.
+
+### Layouts
+
+- **Admin**: sidebar com Dashboard, Clientes, Agenda, Equipe, Configurações. Etiqueta "Admin" visível.
+- **Usuário**: sidebar/tab bar enxuta com Agenda, Clientes, Perfil. Sem ações de cadastro global.
+- Botão "Atualizar" continua nos dois.
+
+### Tela inicial do usuário (/app/agenda)
+
+- Posts agendados para HOJE, filtrados pelos clientes atribuídos.
+- Cada item: horário, cliente, plataforma, legenda, botão "Marcar como publicado".
+- Estado vazio: "Nada agendado para hoje".
+
+### Migração
+
+- Mover telas atuais para `/admin/*`.
+- Criar telas de `/app/*` reaproveitando componentes com queries filtradas por funcionário.
+
+### Segurança
+
+- Políticas atuais filtram por papel/atribuição; nada será afrouxado.
+- Vou corrigir o erro de permissão que escondia clientes (função das políticas estava sem permissão de execução para usuários logados).
+- Só admin cadastra/edita clientes e funcionários.
+
+### Fora do escopo
+
+- Sem mudanças de tema/visual.
+- Sem novos campos de cadastro.
+- Sem alterar integrações externas.

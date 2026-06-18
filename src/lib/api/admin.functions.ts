@@ -37,11 +37,13 @@ export const createEmployee = createServerFn({ method: "POST" })
     const redirectTo = `${origin}/definir-senha`;
 
     // Send invite e-mail — user defines the password on first access
-    const { data: invited, error: inviteErr } =
-      await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
+    const { data: invited, error: inviteErr } = await supabaseAdmin.auth.admin.inviteUserByEmail(
+      data.email,
+      {
         redirectTo,
         data: { name: data.name, role: data.role },
-      });
+      },
+    );
     if (inviteErr) throw new Error(inviteErr.message);
     const newUserId = invited.user?.id;
     if (!newUserId) throw new Error("Falha ao enviar convite.");
@@ -92,8 +94,7 @@ export const deleteEmployee = createServerFn({ method: "POST" })
     if (meErr) throw new Error(meErr.message);
     if (!meEmp || meEmp.role !== "admin")
       throw new Error("Apenas admins podem remover funcionários.");
-    if (meEmp.id === data.employeeId)
-      throw new Error("Você não pode remover a si mesmo.");
+    if (meEmp.id === data.employeeId) throw new Error("Você não pode remover a si mesmo.");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 

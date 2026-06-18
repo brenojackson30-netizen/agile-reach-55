@@ -18,6 +18,7 @@ function EquipePage() {
   const { employee, loading } = useAuth();
   const navigate = useNavigate();
   const [selected, setSelected] = useState<Employee | null>(null);
+  const [showNew, setShowNew] = useState(false);
 
   useEffect(() => {
     if (!loading && employee && employee.role !== "admin") {

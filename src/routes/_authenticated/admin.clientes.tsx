@@ -119,54 +119,73 @@ function ClientesPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {filtered.map(({ client, projectCount, dailyPosts }) => (
-            <Link
+            <div
               key={client.id}
-              to="/admin/clientes/$id"
-              params={{ id: client.id }}
-              className="rounded-xl border p-4 transition-colors hover:bg-[var(--card-hover)]"
+              className="relative rounded-xl border transition-colors hover:bg-[var(--card-hover)]"
               style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
             >
-              <div className="flex items-center gap-3 mb-3">
-                <div
-                  className="size-11 rounded-full flex items-center justify-center text-sm font-bold"
-                  style={{ backgroundColor: client.color_hex ?? "#6366F1", color: "#fff" }}
-                  aria-hidden
-                >
-                  {client.avatar_initials || client.name.slice(0, 2).toUpperCase()}
+              <Link
+                to="/admin/clientes/$id"
+                params={{ id: client.id }}
+                className="block p-4"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div
+                    className="size-11 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                    style={{ backgroundColor: client.color_hex ?? "#6366F1", color: "#fff" }}
+                    aria-hidden
+                  >
+                    {client.avatar_initials || client.name.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold truncate pr-8" style={{ color: "var(--foreground)" }}>
+                      {client.name}
+                    </p>
+                    <p className="text-xs truncate" style={{ color: "var(--muted-foreground)" }}>
+                      {client.category}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold truncate" style={{ color: "var(--foreground)" }}>
-                    {client.name}
-                  </p>
-                  <p className="text-xs truncate" style={{ color: "var(--muted-foreground)" }}>
-                    {client.category}
-                  </p>
+                <div className="flex items-center gap-4 text-xs" style={{ color: "var(--muted-foreground)" }}>
+                  <span>
+                    <strong style={{ color: "var(--foreground)" }}>{projectCount}</strong> projetos
+                  </span>
+                  <span>
+                    <strong style={{ color: "var(--foreground)" }}>{dailyPosts}</strong> posts/dia
+                  </span>
+                  <span
+                    className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-md"
+                    style={{
+                      backgroundColor:
+                        client.status === "active" ? "var(--success-bg)" : "var(--secondary)",
+                      color: client.status === "active" ? "var(--success)" : "var(--muted-foreground)",
+                    }}
+                  >
+                    {client.status === "active" ? "Ativo" : "Inativo"}
+                  </span>
                 </div>
-              </div>
-              <div className="flex items-center gap-4 text-xs" style={{ color: "var(--muted-foreground)" }}>
-                <span>
-                  <strong style={{ color: "var(--foreground)" }}>{projectCount}</strong> projetos
-                </span>
-                <span>
-                  <strong style={{ color: "var(--foreground)" }}>{dailyPosts}</strong> posts/dia
-                </span>
-                <span
-                  className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-md"
-                  style={{
-                    backgroundColor:
-                      client.status === "active" ? "var(--success-bg)" : "var(--secondary)",
-                    color: client.status === "active" ? "var(--success)" : "var(--muted-foreground)",
+              </Link>
+              {isAdmin && (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setEditing(client);
                   }}
+                  aria-label={`Editar ${client.name}`}
+                  className="absolute top-3 right-3 p-1.5 rounded-md hover:bg-[var(--card-hover)] border"
+                  style={{ borderColor: "var(--border-subtle)", backgroundColor: "var(--card)" }}
                 >
-                  {client.status === "active" ? "Ativo" : "Inativo"}
-                </span>
-              </div>
-            </Link>
+                  <Pencil className="size-3.5" style={{ color: "var(--muted-foreground)" }} />
+                </button>
+              )}
+            </div>
           ))}
         </div>
       )}
 
       {showNew && <NewClientModal onClose={() => setShowNew(false)} />}
+      {editing && <EditClientModal client={editing} onClose={() => setEditing(null)} />}
     </div>
   );
 }

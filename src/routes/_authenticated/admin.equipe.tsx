@@ -45,10 +45,74 @@ function EquipePage() {
     },
   });
 
+  const today = todayStr();
+  const dow = todayWeekday();
+
+  const { data: agendaData } = useQuery({
+    queryKey: ["equipe-agenda", today],
+    enabled: employee?.role === "admin",
+    queryFn: async () => {
+      const [profiles, posts, completions] = await Promise.all([
+        supabase.from("social_profiles").select("*"),
+        supabase.from("scheduled_posts").select("*"),
+        supabase.from("post_completions").select("*").eq("completed_date", today),
+      ]);
+      return {
+        profiles: (profiles.data ?? []) as SocialProfile[],
+        posts: (posts.data ?? []) as ScheduledPost[],
+        completions: (completions.data ?? []) as PostCompletion[],
+      };
+    },
+  });
+
   if (employee?.role !== "admin") return null;
 
   const countFor = (empId: string) =>
     (assignments ?? []).filter((a) => a.employee_id === empId).length;
+
+  // Posts de hoje agrupados por cliente
+  const todayPostsByClient = (() => {
+    const m = new Map<string, ScheduledPost[]>();
+    if (!agendaData) return m;
+    const profById = new Map(agendaData.profiles.map((p) => [p.id, p]));
+    // precisamos do client_id por profile → projeto → cliente; mas profile não tem client_id direto.
+    // Carregaremos projects sob demanda abaixo.
+    void profById;
+    return m;
+  })();
+  void todayPostsByClient;
+
+  // Carrega projects para mapear profile→client
+  const { data: projects } = useQuery({
+    queryKey: ["equipe-projects"],
+    enabled: employee?.role === "admin",
+    queryFn: async () => {
+      const { data } = await supabase.from("projects").select("*");
+      return (data ?? []) as Project[];
+    },
+  });
+
+  const todayByEmployee = useMemo(() => {
+    const result = new Map<string, { total: number; done: number }>();
+    if (!agendaData || !projects || !assignments) return result;
+    const profToClient = new Map<string, string>();
+    const projToClient = new Map(projects.map((p) => [p.id, p.client_id]));
+    agendaData.profiles.forEach((pr) => {
+      const cli = projToClient.get(pr.project_id);
+      if (cli) profToClient.set(pr.id, cli);
+    });
+    const todayPosts = agendaData.posts.filter((p) => p.days.includes(dow));
+    const doneIds = new Set(agendaData.completions.map((c) => c.post_id ?? c.scheduled_post_id));
+
+    (assignments ?? []).forEach((a) => {
+      const empPosts = todayPosts.filter((p) => profToClient.get(p.profile_id) === a.client_id);
+      const cur = result.get(a.employee_id) ?? { total: 0, done: 0 };
+      cur.total += empPosts.length;
+      cur.done += empPosts.filter((p) => doneIds.has(p.id)).length;
+      result.set(a.employee_id, cur);
+    });
+    return result;
+  }, [agendaData, projects, assignments, dow]);
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto">

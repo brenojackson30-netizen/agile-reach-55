@@ -81,7 +81,7 @@ function EquipePage() {
   const countFor = (empId: string) =>
     (assignments ?? []).filter((a) => a.employee_id === empId).length;
 
-  void dow;
+  
 
   const todayByEmployee = useMemo(() => {
     const result = new Map<string, { total: number; done: number }>();

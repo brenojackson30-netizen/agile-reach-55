@@ -118,7 +118,7 @@ function ClientesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {filtered.map(({ client, projectCount, dailyPosts }) => (
+          {filtered.map(({ client, projectCount }) => (
             <div
               key={client.id}
               className="relative rounded-xl border transition-colors hover:bg-[var(--card-hover)]"
@@ -146,12 +146,16 @@ function ClientesPage() {
                     </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 text-xs" style={{ color: "var(--muted-foreground)" }}>
+                <div className="flex items-center gap-3 text-xs flex-wrap" style={{ color: "var(--muted-foreground)" }}>
                   <span>
                     <strong style={{ color: "var(--foreground)" }}>{projectCount}</strong> projetos
                   </span>
                   <span>
-                    <strong style={{ color: "var(--foreground)" }}>{dailyPosts}</strong> posts/dia
+                    <strong style={{ color: "var(--foreground)" }}>{client.posts_per_day ?? 0}</strong> posts
+                  </span>
+                  <span aria-hidden style={{ color: "var(--border)" }}>•</span>
+                  <span>
+                    <strong style={{ color: "var(--foreground)" }}>{client.videos_per_day ?? 0}</strong> vídeos
                   </span>
                   <span
                     className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-md"

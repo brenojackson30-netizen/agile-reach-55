@@ -8,8 +8,8 @@ import { Plus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
 import { createEmployee } from "@/lib/api/admin.functions";
-import { todayStr, todayWeekday } from "@/lib/utils-date";
-import type { Client, ClientAssignment, Employee, PostCompletion, Project, ScheduledPost, SocialProfile, Role } from "@/lib/agile-types";
+import { todayStr } from "@/lib/utils-date";
+import type { Client, ClientAssignment, Employee, PostCompletion, Role } from "@/lib/agile-types";
 
 export const Route = createFileRoute("/_authenticated/admin/equipe")({
   component: EquipePage,

@@ -19,9 +19,10 @@ function AuthPage() {
 
   useEffect(() => {
     if (loading || !session) return;
-    // Aguarda o employee carregar para escolher o destino correto
-    if (employee === null) {
-      // ainda pode estar carregando OU não existe — damos um tick
+    // loading=false e session existe → employee já foi resolvido (pode ser null)
+    if (!employee) {
+      // sem perfil de funcionário — enviar para área que mostra a mensagem
+      navigate({ to: "/app/agenda", replace: true });
       return;
     }
     if (employee.role === "admin") {

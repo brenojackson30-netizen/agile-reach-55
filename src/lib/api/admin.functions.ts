@@ -3,14 +3,17 @@ import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-// Use the published app as the canonical auth callback. Preview/editor origins
-// are not reliable redirect targets for invite/recovery e-mails sent to employees.
+// Resolve a URL pública do app para redirects de convite/recovery.
+// Em produção, defina APP_URL no ambiente (ex: https://agile.seuservidor.com.br).
+// Em dev local, usa o host da request.
 function getDefinirSenhaRedirect() {
+  const appUrl = process.env.APP_URL;
+  if (appUrl) return `${appUrl.replace(/\/+$/, "")}/definir-senha`;
+
   const req = getRequest();
-  const headers = req.headers;
-  const host = headers.get("host") ?? "";
+  const host = req.headers.get("host") ?? "localhost:8080";
   const isLocal = host.startsWith("localhost") || host.startsWith("127.0.0.1");
-  const origin = isLocal ? `http://${host}` : "https://agile-reach-55.lovable.app";
+  const origin = isLocal ? `http://${host}` : `https://${host}`;
   return `${origin}/definir-senha`;
 }
 

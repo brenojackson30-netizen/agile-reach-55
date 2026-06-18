@@ -143,6 +143,116 @@ function EquipePage() {
       )}
 
       {selected && <EmployeeModal employee={selected} onClose={() => setSelected(null)} />}
+      {showNew && <NewEmployeeModal onClose={() => setShowNew(false)} />}
+    </div>
+  );
+}
+
+function NewEmployeeModal({ onClose }: { onClose: () => void }) {
+  const qc = useQueryClient();
+  const create = useServerFn(createEmployee);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState<Role>("editor");
+
+  const mut = useMutation({
+    mutationFn: async () => {
+      await create({ data: { name: name.trim(), email: email.trim(), password, role } });
+    },
+    onSuccess: () => {
+      toast.success("Funcionário criado. Ele já pode acessar com o e-mail e senha definidos.");
+      qc.invalidateQueries({ queryKey: ["employees"] });
+      onClose();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <div
+      className="fixed inset-0 z-[400] flex items-center justify-center p-4"
+      style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-xl border"
+        style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
+      >
+        <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: "var(--border-subtle)" }}>
+          <h2 className="font-semibold" style={{ color: "var(--foreground)" }}>Novo funcionário</h2>
+          <button onClick={onClose} aria-label="Fechar" className="p-1 rounded-md hover:bg-[var(--card-hover)]">
+            <X className="size-4" style={{ color: "var(--muted-foreground)" }} />
+          </button>
+        </div>
+        <form
+          className="p-4 space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            mut.mutate();
+          }}
+        >
+          <NField label="Nome *" value={name} onChange={setName} required />
+          <NField label="E-mail *" value={email} onChange={setEmail} type="email" required />
+          <NField label="Senha (mín. 8) *" value={password} onChange={setPassword} type="password" required />
+          <div>
+            <label className="block text-xs mb-1.5" style={{ color: "var(--muted-foreground)" }}>Papel</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value as Role)}
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              style={{ backgroundColor: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}
+            >
+              <option value="admin">Admin (acesso total)</option>
+              <option value="editor">Editor (publica posts)</option>
+              <option value="viewer">Viewer (apenas leitura)</option>
+            </select>
+          </div>
+          <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+            Compartilhe o e-mail e a senha com o funcionário. Ele poderá entrar imediatamente.
+          </p>
+          <button
+            type="submit"
+            disabled={mut.isPending}
+            className="w-full rounded-md py-2 text-sm font-semibold disabled:opacity-60"
+            style={{ backgroundColor: "var(--accent)", color: "var(--accent-foreground)" }}
+          >
+            {mut.isPending ? "Criando..." : "Criar funcionário"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function NField({
+  label,
+  value,
+  onChange,
+  type = "text",
+  required,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  required?: boolean;
+}) {
+  return (
+    <div>
+      <label className="block text-xs mb-1.5" style={{ color: "var(--muted-foreground)" }}>
+        {label}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={required}
+        className="w-full rounded-md border px-3 py-2 text-sm outline-none"
+        style={{ backgroundColor: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}
+      />
     </div>
   );
 }
@@ -152,7 +262,7 @@ function EmployeeModal({ employee, onClose }: { employee: Employee; onClose: () 
   const { employee: me } = useAuth();
   const [role, setRole] = useState<Role>(employee.role);
   const [status, setStatus] = useState(employee.status);
-  const [tab, setTab] = useState<"info" | "clients">("info");
+  const [tab, setTab] = useState<"info" | "clients" | "atividade">("info");
 
   const { data: clients } = useQuery({
     queryKey: ["all-clients-admin"],

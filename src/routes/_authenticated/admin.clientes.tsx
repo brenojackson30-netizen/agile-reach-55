@@ -13,6 +13,9 @@ export const Route = createFileRoute("/_authenticated/admin/clientes")({
 
 function ClientesPage() {
   const [search, setSearch] = useState("");
+  const [showNew, setShowNew] = useState(false);
+  const { employee } = useAuth();
+  const isAdmin = employee?.role === "admin";
 
   const { data, isLoading } = useQuery({
     queryKey: ["clients-list"],

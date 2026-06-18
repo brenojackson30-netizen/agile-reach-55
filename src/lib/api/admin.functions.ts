@@ -1,10 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const createEmployeeSchema = z.object({
   email: z.string().trim().email().max(255),
-  password: z.string().min(8).max(72),
   name: z.string().trim().min(1).max(120),
   role: z.enum(["admin", "editor", "viewer"]),
 });
@@ -22,20 +22,29 @@ export const createEmployee = createServerFn({ method: "POST" })
       .eq("user_id", context.userId)
       .maybeSingle();
     if (meErr) throw new Error(meErr.message);
-    if (!meEmp || meEmp.role !== "admin") throw new Error("Apenas admins podem criar funcionários.");
+    if (!meEmp || meEmp.role !== "admin")
+      throw new Error("Apenas admins podem criar funcionários.");
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Create auth user (email confirmed so they can login immediately)
-    const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
-      email: data.email,
-      password: data.password,
-      email_confirm: true,
-      user_metadata: { name: data.name },
-    });
-    if (createErr) throw new Error(createErr.message);
-    const newUserId = created.user?.id;
-    if (!newUserId) throw new Error("Falha ao criar usuário de autenticação.");
+    // Determine site origin from the request to build the invite redirect URL
+    const req = getRequest();
+    const headers = req.headers;
+    const origin =
+      headers.get("origin") ||
+      (headers.get("referer") ? new URL(headers.get("referer")!).origin : "") ||
+      (headers.get("host") ? `https://${headers.get("host")}` : "");
+    const redirectTo = `${origin}/definir-senha`;
+
+    // Send invite e-mail — user defines the password on first access
+    const { data: invited, error: inviteErr } =
+      await supabaseAdmin.auth.admin.inviteUserByEmail(data.email, {
+        redirectTo,
+        data: { name: data.name, role: data.role },
+      });
+    if (inviteErr) throw new Error(inviteErr.message);
+    const newUserId = invited.user?.id;
+    if (!newUserId) throw new Error("Falha ao enviar convite.");
 
     const initials = data.name
       .split(/\s+/)

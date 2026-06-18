@@ -197,6 +197,9 @@ function NewClientModal({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [color, setColor] = useState("#6366F1");
+  const [clientLink, setClientLink] = useState("");
+  const [postsPerDay, setPostsPerDay] = useState("0");
+  const [videosPerDay, setVideosPerDay] = useState("0");
 
   const create = useMutation({
     mutationFn: async () => {
@@ -216,6 +219,9 @@ function NewClientModal({ onClose }: { onClose: () => void }) {
         color_hex: color,
         avatar_initials: initials,
         status: "active",
+        client_link: clientLink.trim() || null,
+        posts_per_day: Math.max(0, parseInt(postsPerDay, 10) || 0),
+        videos_per_day: Math.max(0, parseInt(videosPerDay, 10) || 0),
       });
       if (error) throw error;
     },

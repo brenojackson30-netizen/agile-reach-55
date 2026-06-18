@@ -33,7 +33,7 @@ interface AgendaItem {
 }
 
 function MinhaAgendaPage() {
-  const { session } = useAuth();
+  const { session, employee } = useAuth();
   const qc = useQueryClient();
   const today = todayStr();
   const dow = todayWeekday();
@@ -119,7 +119,7 @@ function MinhaAgendaPage() {
           post_id: item.post.id,
           scheduled_post_id: item.post.id,
           completed_date: today,
-          completed_by: session?.user.id,
+          completed_by: employee?.id ?? null,
         });
         if (error) throw error;
       }

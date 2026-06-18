@@ -307,6 +307,9 @@ function EditClientModal({ client, onClose }: { client: Client; onClose: () => v
   const [email, setEmail] = useState(client.email ?? "");
   const [phone, setPhone] = useState(client.phone ?? "");
   const [color, setColor] = useState(client.color_hex ?? "#6366F1");
+  const [clientLink, setClientLink] = useState(client.client_link ?? "");
+  const [postsPerDay, setPostsPerDay] = useState(String(client.posts_per_day ?? 0));
+  const [videosPerDay, setVideosPerDay] = useState(String(client.videos_per_day ?? 0));
   const [status, setStatus] = useState<"active" | "inactive">(
     (client.status as "active" | "inactive") ?? "active",
   );
@@ -331,6 +334,9 @@ function EditClientModal({ client, onClose }: { client: Client; onClose: () => v
           color_hex: color,
           avatar_initials: initials,
           status,
+          client_link: clientLink.trim() || null,
+          posts_per_day: Math.max(0, parseInt(postsPerDay, 10) || 0),
+          videos_per_day: Math.max(0, parseInt(videosPerDay, 10) || 0),
         })
         .eq("id", client.id);
       if (error) throw error;

@@ -382,6 +382,17 @@ function EditClientModal({ client, onClose }: { client: Client; onClose: () => v
           <Input label="Categoria" value={category} onChange={setCategory} placeholder="Ex: Moda, Restaurante..." />
           <Input label="E-mail de contato" value={email} onChange={setEmail} type="email" />
           <Input label="Telefone" value={phone} onChange={setPhone} />
+          <Input
+            label="Link do cliente"
+            value={clientLink}
+            onChange={setClientLink}
+            type="url"
+            placeholder="https://drive.google.com/... ou @perfil"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Posts por dia" value={postsPerDay} onChange={setPostsPerDay} type="number" />
+            <Input label="Vídeos por dia" value={videosPerDay} onChange={setVideosPerDay} type="number" />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs mb-1.5" style={{ color: "var(--muted-foreground)" }}>Cor</label>
@@ -410,9 +421,6 @@ function EditClientModal({ client, onClose }: { client: Client; onClose: () => v
               </select>
             </div>
           </div>
-          <p className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
-            Projetos e posts/dia são gerenciados na página de detalhes do cliente.
-          </p>
           <button
             type="submit"
             disabled={save.isPending}

@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import type { Client, ClientAssignment, Employee, Role } from "@/lib/agile-types";
+import { createEmployee } from "@/lib/api/admin.functions";
+import type { Client, ClientAssignment, Employee, PostCompletion, Role } from "@/lib/agile-types";
 
 export const Route = createFileRoute("/_authenticated/admin/equipe")({
   component: EquipePage,
@@ -16,6 +18,7 @@ function EquipePage() {
   const { employee, loading } = useAuth();
   const navigate = useNavigate();
   const [selected, setSelected] = useState<Employee | null>(null);
+  const [showNew, setShowNew] = useState(false);
 
   useEffect(() => {
     if (!loading && employee && employee.role !== "admin") {
@@ -48,13 +51,22 @@ function EquipePage() {
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto">
-      <header className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold" style={{ color: "var(--foreground)" }}>
-          Equipe
-        </h1>
-        <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>
-          Gerencie funcionários e clientes atribuídos.
-        </p>
+      <header className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold" style={{ color: "var(--foreground)" }}>
+            Equipe
+          </h1>
+          <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>
+            Gerencie funcionários e clientes atribuídos.
+          </p>
+        </div>
+        <button
+          onClick={() => setShowNew(true)}
+          className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-md"
+          style={{ backgroundColor: "var(--accent)", color: "var(--accent-foreground)" }}
+        >
+          <Plus className="size-4" /> Novo funcionário
+        </button>
       </header>
 
       {isLoading ? (
@@ -131,6 +143,116 @@ function EquipePage() {
       )}
 
       {selected && <EmployeeModal employee={selected} onClose={() => setSelected(null)} />}
+      {showNew && <NewEmployeeModal onClose={() => setShowNew(false)} />}
+    </div>
+  );
+}
+
+function NewEmployeeModal({ onClose }: { onClose: () => void }) {
+  const qc = useQueryClient();
+  const create = useServerFn(createEmployee);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [role, setRole] = useState<Role>("editor");
+
+  const mut = useMutation({
+    mutationFn: async () => {
+      await create({ data: { name: name.trim(), email: email.trim(), password, role } });
+    },
+    onSuccess: () => {
+      toast.success("Funcionário criado. Ele já pode acessar com o e-mail e senha definidos.");
+      qc.invalidateQueries({ queryKey: ["employees"] });
+      onClose();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <div
+      className="fixed inset-0 z-[400] flex items-center justify-center p-4"
+      style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-xl border"
+        style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
+      >
+        <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: "var(--border-subtle)" }}>
+          <h2 className="font-semibold" style={{ color: "var(--foreground)" }}>Novo funcionário</h2>
+          <button onClick={onClose} aria-label="Fechar" className="p-1 rounded-md hover:bg-[var(--card-hover)]">
+            <X className="size-4" style={{ color: "var(--muted-foreground)" }} />
+          </button>
+        </div>
+        <form
+          className="p-4 space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            mut.mutate();
+          }}
+        >
+          <NField label="Nome *" value={name} onChange={setName} required />
+          <NField label="E-mail *" value={email} onChange={setEmail} type="email" required />
+          <NField label="Senha (mín. 8) *" value={password} onChange={setPassword} type="password" required />
+          <div>
+            <label className="block text-xs mb-1.5" style={{ color: "var(--muted-foreground)" }}>Papel</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value as Role)}
+              className="w-full rounded-md border px-3 py-2 text-sm"
+              style={{ backgroundColor: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}
+            >
+              <option value="admin">Admin (acesso total)</option>
+              <option value="editor">Editor (publica posts)</option>
+              <option value="viewer">Viewer (apenas leitura)</option>
+            </select>
+          </div>
+          <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
+            Compartilhe o e-mail e a senha com o funcionário. Ele poderá entrar imediatamente.
+          </p>
+          <button
+            type="submit"
+            disabled={mut.isPending}
+            className="w-full rounded-md py-2 text-sm font-semibold disabled:opacity-60"
+            style={{ backgroundColor: "var(--accent)", color: "var(--accent-foreground)" }}
+          >
+            {mut.isPending ? "Criando..." : "Criar funcionário"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function NField({
+  label,
+  value,
+  onChange,
+  type = "text",
+  required,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  required?: boolean;
+}) {
+  return (
+    <div>
+      <label className="block text-xs mb-1.5" style={{ color: "var(--muted-foreground)" }}>
+        {label}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        required={required}
+        className="w-full rounded-md border px-3 py-2 text-sm outline-none"
+        style={{ backgroundColor: "var(--background)", borderColor: "var(--border)", color: "var(--foreground)" }}
+      />
     </div>
   );
 }
@@ -140,7 +262,7 @@ function EmployeeModal({ employee, onClose }: { employee: Employee; onClose: () 
   const { employee: me } = useAuth();
   const [role, setRole] = useState<Role>(employee.role);
   const [status, setStatus] = useState(employee.status);
-  const [tab, setTab] = useState<"info" | "clients">("info");
+  const [tab, setTab] = useState<"info" | "clients" | "atividade">("info");
 
   const { data: clients } = useQuery({
     queryKey: ["all-clients-admin"],
@@ -230,7 +352,7 @@ function EmployeeModal({ employee, onClose }: { employee: Employee; onClose: () 
         </div>
 
         <div className="flex border-b" style={{ borderColor: "var(--border-subtle)" }}>
-          {(["info", "clients"] as const).map((t) => (
+          {(["info", "clients", "atividade"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -240,7 +362,7 @@ function EmployeeModal({ employee, onClose }: { employee: Employee; onClose: () 
                 color: tab === t ? "var(--accent)" : "var(--muted-foreground)",
               }}
             >
-              {t === "info" ? "Informações" : "Clientes Atribuídos"}
+              {t === "info" ? "Informações" : t === "clients" ? "Clientes Atribuídos" : "Atividade"}
             </button>
           ))}
         </div>
@@ -296,7 +418,7 @@ function EmployeeModal({ employee, onClose }: { employee: Employee; onClose: () 
                 {saveInfo.isPending ? "Salvando..." : "Salvar"}
               </button>
             </div>
-          ) : (
+          ) : tab === "clients" ? (
             <div>
               {!clients || clients.length === 0 ? (
                 <p className="text-sm text-center py-8" style={{ color: "var(--muted-foreground)" }}>
@@ -342,6 +464,8 @@ function EmployeeModal({ employee, onClose }: { employee: Employee; onClose: () 
                 </ul>
               )}
             </div>
+          ) : (
+            <ActivityTab userId={employee.user_id} />
           )}
         </div>
       </div>
@@ -356,6 +480,57 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
         {label}
       </label>
       {children}
+    </div>
+  );
+}
+
+function ActivityTab({ userId }: { userId: string }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["employee-activity", userId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("post_completions")
+        .select("*")
+        .eq("completed_by", userId)
+        .order("completed_at", { ascending: false })
+        .limit(50);
+      return (data ?? []) as PostCompletion[];
+    },
+  });
+
+  if (isLoading) {
+    return <p className="text-sm text-center py-8" style={{ color: "var(--muted-foreground)" }}>Carregando...</p>;
+  }
+  if (!data || data.length === 0) {
+    return (
+      <p className="text-sm text-center py-8" style={{ color: "var(--muted-foreground)" }}>
+        Nenhuma publicação registrada por este funcionário ainda.
+      </p>
+    );
+  }
+
+  return (
+    <div>
+      <p className="text-xs mb-3" style={{ color: "var(--muted-foreground)" }}>
+        Últimas {data.length} publicações marcadas como concluídas.
+      </p>
+      <ul className="space-y-1">
+        {data.map((c) => {
+          const when = new Date(c.completed_at);
+          return (
+            <li
+              key={c.id}
+              className="flex items-center justify-between gap-3 px-3 py-2 rounded-md text-sm"
+              style={{ backgroundColor: "var(--background)", color: "var(--foreground)" }}
+            >
+              <span className="truncate">Publicação em {c.completed_date}</span>
+              <span className="text-xs tabular-nums" style={{ color: "var(--muted-foreground)" }}>
+                {when.toLocaleString("pt-BR")}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
     </div>
   );
 }

@@ -1,8 +1,10 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus, Search, X } from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
 import type { Client, Project, ScheduledPost, SocialProfile } from "@/lib/agile-types";
 
 export const Route = createFileRoute("/_authenticated/admin/clientes")({
@@ -11,6 +13,9 @@ export const Route = createFileRoute("/_authenticated/admin/clientes")({
 
 function ClientesPage() {
   const [search, setSearch] = useState("");
+  const [showNew, setShowNew] = useState(false);
+  const { employee } = useAuth();
+  const isAdmin = employee?.role === "admin";
 
   const { data, isLoading } = useQuery({
     queryKey: ["clients-list"],
@@ -45,13 +50,24 @@ function ClientesPage() {
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto">
-      <header className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold" style={{ color: "var(--foreground)" }}>
-          Clientes
-        </h1>
-        <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>
-          Apenas os clientes atribuídos a você aparecem aqui.
-        </p>
+      <header className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold" style={{ color: "var(--foreground)" }}>
+            Clientes
+          </h1>
+          <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>
+            Gerencie os clientes da agência.
+          </p>
+        </div>
+        {isAdmin && (
+          <button
+            onClick={() => setShowNew(true)}
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-md"
+            style={{ backgroundColor: "var(--accent)", color: "var(--accent-foreground)" }}
+          >
+            <Plus className="size-4" /> Novo cliente
+          </button>
+        )}
       </header>
 
       <div className="relative mb-4">
@@ -148,6 +164,138 @@ function ClientesPage() {
           ))}
         </div>
       )}
+
+      {showNew && <NewClientModal onClose={() => setShowNew(false)} />}
+    </div>
+  );
+}
+
+function NewClientModal({ onClose }: { onClose: () => void }) {
+  const qc = useQueryClient();
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [color, setColor] = useState("#6366F1");
+
+  const create = useMutation({
+    mutationFn: async () => {
+      const trimmed = name.trim();
+      if (!trimmed) throw new Error("Nome é obrigatório");
+      const initials = trimmed
+        .split(/\s+/)
+        .map((p) => p[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+      const { error } = await supabase.from("clients").insert({
+        name: trimmed,
+        category: category.trim() || null,
+        email: email.trim() || null,
+        phone: phone.trim() || null,
+        color_hex: color,
+        avatar_initials: initials,
+        status: "active",
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Cliente criado");
+      qc.invalidateQueries({ queryKey: ["clients-list"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-data"] });
+      qc.invalidateQueries({ queryKey: ["all-clients-admin"] });
+      onClose();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <div
+      className="fixed inset-0 z-[400] flex items-center justify-center p-4"
+      style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-xl border"
+        style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
+      >
+        <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: "var(--border-subtle)" }}>
+          <h2 className="font-semibold" style={{ color: "var(--foreground)" }}>Novo cliente</h2>
+          <button onClick={onClose} aria-label="Fechar" className="p-1 rounded-md hover:bg-[var(--card-hover)]">
+            <X className="size-4" style={{ color: "var(--muted-foreground)" }} />
+          </button>
+        </div>
+        <form
+          className="p-4 space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            create.mutate();
+          }}
+        >
+          <Input label="Nome *" value={name} onChange={setName} required />
+          <Input label="Categoria" value={category} onChange={setCategory} placeholder="Ex: Moda, Restaurante..." />
+          <Input label="E-mail de contato" value={email} onChange={setEmail} type="email" />
+          <Input label="Telefone" value={phone} onChange={setPhone} />
+          <div>
+            <label className="block text-xs mb-1.5" style={{ color: "var(--muted-foreground)" }}>Cor</label>
+            <input
+              type="color"
+              value={color}
+              onChange={(e) => setColor(e.target.value)}
+              className="h-9 w-16 rounded-md border cursor-pointer"
+              style={{ borderColor: "var(--border)", backgroundColor: "var(--background)" }}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={create.isPending}
+            className="w-full rounded-md py-2 text-sm font-semibold disabled:opacity-60"
+            style={{ backgroundColor: "var(--accent)", color: "var(--accent-foreground)" }}
+          >
+            {create.isPending ? "Criando..." : "Criar cliente"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function Input({
+  label,
+  value,
+  onChange,
+  type = "text",
+  placeholder,
+  required,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  placeholder?: string;
+  required?: boolean;
+}) {
+  return (
+    <div>
+      <label className="block text-xs mb-1.5" style={{ color: "var(--muted-foreground)" }}>
+        {label}
+      </label>
+      <input
+        type={type}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        required={required}
+        className="w-full rounded-md border px-3 py-2 text-sm outline-none"
+        style={{
+          backgroundColor: "var(--background)",
+          borderColor: "var(--border)",
+          color: "var(--foreground)",
+        }}
+      />
     </div>
   );
 }

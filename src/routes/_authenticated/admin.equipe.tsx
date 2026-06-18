@@ -310,7 +310,7 @@ function EmployeeModal({ employee, onClose }: { employee: Employee; onClose: () 
       } else {
         const { error } = await supabase
           .from("client_assignments")
-          .insert({ employee_id: employee.id, client_id: clientId });
+          .insert({ employee_id: employee.id, client_id: clientId, role: employee.role || "editor" });
         if (error) throw error;
       }
     },

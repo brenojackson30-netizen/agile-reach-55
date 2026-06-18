@@ -27,13 +27,13 @@ export const createEmployee = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Determine site origin from the request to build the invite redirect URL
+    // Use the published app as the canonical auth callback. Preview/editor origins
+    // are not reliable redirect targets for invite emails sent to employees.
     const req = getRequest();
     const headers = req.headers;
-    const origin =
-      headers.get("origin") ||
-      (headers.get("referer") ? new URL(headers.get("referer")!).origin : "") ||
-      (headers.get("host") ? `https://${headers.get("host")}` : "");
+    const host = headers.get("host") ?? "";
+    const isLocal = host.startsWith("localhost") || host.startsWith("127.0.0.1");
+    const origin = isLocal ? `http://${host}` : "https://agile-reach-55.lovable.app";
     const redirectTo = `${origin}/definir-senha`;
 
     // Send invite e-mail — user defines the password on first access

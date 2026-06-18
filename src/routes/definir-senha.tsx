@@ -121,6 +121,20 @@ function DefinirSenhaPage() {
           <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
             Validando convite...
           </p>
+        ) : inviteError ? (
+          <div className="space-y-4">
+            <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
+              {inviteError}
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/auth", replace: true })}
+              className="w-full rounded-md py-2.5 text-sm font-semibold"
+              style={{ backgroundColor: "var(--accent)", color: "var(--accent-foreground)" }}
+            >
+              Ir para login
+            </button>
+          </div>
         ) : (
           <form onSubmit={onSubmit} className="space-y-4">
             <div>

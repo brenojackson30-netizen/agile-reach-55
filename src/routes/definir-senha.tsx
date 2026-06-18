@@ -12,18 +12,47 @@ export const Route = createFileRoute("/definir-senha")({
 function DefinirSenhaPage() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
+  const [inviteTokenHash, setInviteTokenHash] = useState<string | null>(null);
+  const [inviteError, setInviteError] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    // Supabase coloca o token de convite no hash da URL e cria a sessão automaticamente.
     let mounted = true;
+    const url = new URL(window.location.href);
+    const hashParams = new URLSearchParams(url.hash.replace(/^#/, ""));
+    const errorCode = url.searchParams.get("error_code") || hashParams.get("error_code");
+    const errorDescription =
+      url.searchParams.get("error_description") || hashParams.get("error_description");
+    const tokenHash = url.searchParams.get("token_hash") || hashParams.get("token_hash");
+    const type = url.searchParams.get("type") || hashParams.get("type");
+
+    if (errorCode) {
+      const message =
+        errorCode === "otp_expired"
+          ? "Este convite já foi usado ou expirou. Peça um novo convite ao administrador."
+          : errorDescription || "Não foi possível validar este convite.";
+      setInviteError(message);
+      setReady(true);
+      return () => {
+        mounted = false;
+      };
+    }
+
+    if (tokenHash && type === "invite") {
+      setInviteTokenHash(tokenHash);
+      setReady(true);
+      return () => {
+        mounted = false;
+      };
+    }
+
     supabase.auth.getSession().then(({ data }) => {
       if (!mounted) return;
       if (!data.session) {
-        toast.error("Link inválido ou expirado. Peça um novo convite ao administrador.");
-        navigate({ to: "/auth", replace: true });
+        setInviteError("Link inválido ou expirado. Peça um novo convite ao administrador.");
+        setReady(true);
         return;
       }
       setReady(true);
@@ -31,7 +60,7 @@ function DefinirSenhaPage() {
     return () => {
       mounted = false;
     };
-  }, [navigate]);
+  }, []);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,6 +73,17 @@ function DefinirSenhaPage() {
       return;
     }
     setSubmitting(true);
+    if (inviteTokenHash) {
+      const { error: verifyError } = await supabase.auth.verifyOtp({
+        token_hash: inviteTokenHash,
+        type: "invite",
+      });
+      if (verifyError) {
+        setSubmitting(false);
+        toast.error("Convite inválido ou expirado. Peça um novo convite ao administrador.");
+        return;
+      }
+    }
     const { error } = await supabase.auth.updateUser({ password });
     setSubmitting(false);
     if (error) {
@@ -81,6 +121,20 @@ function DefinirSenhaPage() {
           <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
             Validando convite...
           </p>
+        ) : inviteError ? (
+          <div className="space-y-4">
+            <p className="text-sm" style={{ color: "var(--muted-foreground)" }}>
+              {inviteError}
+            </p>
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/auth", replace: true })}
+              className="w-full rounded-md py-2.5 text-sm font-semibold"
+              style={{ backgroundColor: "var(--accent)", color: "var(--accent-foreground)" }}
+            >
+              Ir para login
+            </button>
+          </div>
         ) : (
           <form onSubmit={onSubmit} className="space-y-4">
             <div>

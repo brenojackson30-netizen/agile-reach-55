@@ -12,16 +12,25 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { session, loading } = useAuth();
+  const { session, employee, loading } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!loading && session) {
+    if (loading || !session) return;
+    // loading=false e session existe → employee já foi resolvido (pode ser null)
+    if (!employee) {
+      // sem perfil de funcionário — enviar para área que mostra a mensagem
+      navigate({ to: "/app/agenda", replace: true });
+      return;
+    }
+    if (employee.role === "admin") {
+      navigate({ to: "/admin/dashboard", replace: true });
+    } else {
       navigate({ to: "/app/agenda", replace: true });
     }
-  }, [session, loading, navigate]);
+  }, [session, employee, loading, navigate]);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +42,7 @@ function AuthPage() {
       return;
     }
     toast.success("Bem-vindo!");
-    navigate({ to: "/app/agenda", replace: true });
+    // navegação acontece via useEffect quando session/employee chegarem
   };
 
   return (

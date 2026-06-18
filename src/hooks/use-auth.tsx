@@ -28,26 +28,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    let mounted = true;
+
     const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      if (!mounted) return;
       setSession(s);
       if (s?.user) {
-        // adia para não bloquear o callback
-        setTimeout(() => loadEmployee(s.user.id), 0);
+        setLoading(true);
+        setTimeout(() => {
+          loadEmployee(s.user.id).finally(() => {
+            if (mounted) setLoading(false);
+          });
+        }, 0);
       } else {
         setEmployee(null);
+        setLoading(false);
       }
     });
 
     supabase.auth.getSession().then(({ data }) => {
+      if (!mounted) return;
       setSession(data.session);
       if (data.session?.user) {
-        loadEmployee(data.session.user.id).finally(() => setLoading(false));
+        loadEmployee(data.session.user.id).finally(() => {
+          if (mounted) setLoading(false);
+        });
       } else {
         setLoading(false);
       }
     });
 
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const value: AuthContextValue = {

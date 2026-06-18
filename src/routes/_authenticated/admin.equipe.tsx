@@ -352,7 +352,7 @@ function EmployeeModal({ employee, onClose }: { employee: Employee; onClose: () 
         </div>
 
         <div className="flex border-b" style={{ borderColor: "var(--border-subtle)" }}>
-          {(["info", "clients"] as const).map((t) => (
+          {(["info", "clients", "atividade"] as const).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -362,7 +362,7 @@ function EmployeeModal({ employee, onClose }: { employee: Employee; onClose: () 
                 color: tab === t ? "var(--accent)" : "var(--muted-foreground)",
               }}
             >
-              {t === "info" ? "Informações" : "Clientes Atribuídos"}
+              {t === "info" ? "Informações" : t === "clients" ? "Clientes Atribuídos" : "Atividade"}
             </button>
           ))}
         </div>

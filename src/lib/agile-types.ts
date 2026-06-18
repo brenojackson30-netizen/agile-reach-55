@@ -44,7 +44,8 @@ export interface ScheduledPost {
 
 export interface PostCompletion {
   id: string;
-  scheduled_post_id: string;
+  post_id: string | null;
+  scheduled_post_id: string | null;
   completed_date: string;
   completed_by: string | null;
   completed_at: string;

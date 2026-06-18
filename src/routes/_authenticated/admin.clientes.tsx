@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, X } from "lucide-react";
+import { Pencil, Plus, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -14,6 +14,7 @@ export const Route = createFileRoute("/_authenticated/admin/clientes")({
 function ClientesPage() {
   const [search, setSearch] = useState("");
   const [showNew, setShowNew] = useState(false);
+  const [editing, setEditing] = useState<Client | null>(null);
   const { employee } = useAuth();
   const isAdmin = employee?.role === "admin";
 

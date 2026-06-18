@@ -46,7 +46,7 @@ function EquipePage() {
   });
 
   const today = todayStr();
-  const dow = todayWeekday();
+  
 
   const { data: agendaData } = useQuery({
     queryKey: ["equipe-agenda", today],

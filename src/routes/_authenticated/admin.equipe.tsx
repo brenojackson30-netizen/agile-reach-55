@@ -483,3 +483,54 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </div>
   );
 }
+
+function ActivityTab({ userId }: { userId: string }) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["employee-activity", userId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("post_completions")
+        .select("*")
+        .eq("completed_by", userId)
+        .order("completed_at", { ascending: false })
+        .limit(50);
+      return (data ?? []) as PostCompletion[];
+    },
+  });
+
+  if (isLoading) {
+    return <p className="text-sm text-center py-8" style={{ color: "var(--muted-foreground)" }}>Carregando...</p>;
+  }
+  if (!data || data.length === 0) {
+    return (
+      <p className="text-sm text-center py-8" style={{ color: "var(--muted-foreground)" }}>
+        Nenhuma publicação registrada por este funcionário ainda.
+      </p>
+    );
+  }
+
+  return (
+    <div>
+      <p className="text-xs mb-3" style={{ color: "var(--muted-foreground)" }}>
+        Últimas {data.length} publicações marcadas como concluídas.
+      </p>
+      <ul className="space-y-1">
+        {data.map((c) => {
+          const when = new Date(c.completed_at);
+          return (
+            <li
+              key={c.id}
+              className="flex items-center justify-between gap-3 px-3 py-2 rounded-md text-sm"
+              style={{ backgroundColor: "var(--background)", color: "var(--foreground)" }}
+            >
+              <span className="truncate">Publicação em {c.completed_date}</span>
+              <span className="text-xs tabular-nums" style={{ color: "var(--muted-foreground)" }}>
+                {when.toLocaleString("pt-BR")}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}

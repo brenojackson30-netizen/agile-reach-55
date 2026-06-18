@@ -13,6 +13,9 @@ export interface Client {
   email: string | null;
   phone: string | null;
   notes: string | null;
+  client_link: string | null;
+  posts_per_day: number;
+  videos_per_day: number;
   created_at: string;
 }
 

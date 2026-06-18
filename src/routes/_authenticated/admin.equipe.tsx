@@ -418,7 +418,7 @@ function EmployeeModal({ employee, onClose }: { employee: Employee; onClose: () 
                 {saveInfo.isPending ? "Salvando..." : "Salvar"}
               </button>
             </div>
-          ) : (
+          ) : tab === "clients" ? (
             <div>
               {!clients || clients.length === 0 ? (
                 <p className="text-sm text-center py-8" style={{ color: "var(--muted-foreground)" }}>
@@ -464,6 +464,8 @@ function EmployeeModal({ employee, onClose }: { employee: Employee; onClose: () 
                 </ul>
               )}
             </div>
+          ) : (
+            <ActivityTab userId={employee.user_id} />
           )}
         </div>
       </div>

@@ -64,6 +64,7 @@ export type Database = {
           avatar_initials: string | null
           brand_color: string | null
           category: string | null
+          client_link: string | null
           color_hex: string | null
           created_at: string | null
           description: string | null
@@ -77,15 +78,18 @@ export type Database = {
           name: string
           notes: string | null
           phone: string | null
+          posts_per_day: number
           status: string
           twitter_url: string | null
           updated_at: string | null
+          videos_per_day: number
           website_url: string | null
         }
         Insert: {
           avatar_initials?: string | null
           brand_color?: string | null
           category?: string | null
+          client_link?: string | null
           color_hex?: string | null
           created_at?: string | null
           description?: string | null
@@ -99,15 +103,18 @@ export type Database = {
           name: string
           notes?: string | null
           phone?: string | null
+          posts_per_day?: number
           status?: string
           twitter_url?: string | null
           updated_at?: string | null
+          videos_per_day?: number
           website_url?: string | null
         }
         Update: {
           avatar_initials?: string | null
           brand_color?: string | null
           category?: string | null
+          client_link?: string | null
           color_hex?: string | null
           created_at?: string | null
           description?: string | null
@@ -121,9 +128,11 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string | null
+          posts_per_day?: number
           status?: string
           twitter_url?: string | null
           updated_at?: string | null
+          videos_per_day?: number
           website_url?: string | null
         }
         Relationships: []

@@ -197,6 +197,9 @@ function NewClientModal({ onClose }: { onClose: () => void }) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [color, setColor] = useState("#6366F1");
+  const [clientLink, setClientLink] = useState("");
+  const [postsPerDay, setPostsPerDay] = useState("0");
+  const [videosPerDay, setVideosPerDay] = useState("0");
 
   const create = useMutation({
     mutationFn: async () => {
@@ -216,6 +219,9 @@ function NewClientModal({ onClose }: { onClose: () => void }) {
         color_hex: color,
         avatar_initials: initials,
         status: "active",
+        client_link: clientLink.trim() || null,
+        posts_per_day: Math.max(0, parseInt(postsPerDay, 10) || 0),
+        videos_per_day: Math.max(0, parseInt(videosPerDay, 10) || 0),
       });
       if (error) throw error;
     },
@@ -259,6 +265,17 @@ function NewClientModal({ onClose }: { onClose: () => void }) {
           <Input label="Categoria" value={category} onChange={setCategory} placeholder="Ex: Moda, Restaurante..." />
           <Input label="E-mail de contato" value={email} onChange={setEmail} type="email" />
           <Input label="Telefone" value={phone} onChange={setPhone} />
+          <Input
+            label="Link do cliente"
+            value={clientLink}
+            onChange={setClientLink}
+            type="url"
+            placeholder="https://drive.google.com/... ou @perfil"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Posts por dia" value={postsPerDay} onChange={setPostsPerDay} type="number" />
+            <Input label="Vídeos por dia" value={videosPerDay} onChange={setVideosPerDay} type="number" />
+          </div>
           <div>
             <label className="block text-xs mb-1.5" style={{ color: "var(--muted-foreground)" }}>Cor</label>
             <input
@@ -290,6 +307,9 @@ function EditClientModal({ client, onClose }: { client: Client; onClose: () => v
   const [email, setEmail] = useState(client.email ?? "");
   const [phone, setPhone] = useState(client.phone ?? "");
   const [color, setColor] = useState(client.color_hex ?? "#6366F1");
+  const [clientLink, setClientLink] = useState(client.client_link ?? "");
+  const [postsPerDay, setPostsPerDay] = useState(String(client.posts_per_day ?? 0));
+  const [videosPerDay, setVideosPerDay] = useState(String(client.videos_per_day ?? 0));
   const [status, setStatus] = useState<"active" | "inactive">(
     (client.status as "active" | "inactive") ?? "active",
   );
@@ -314,6 +334,9 @@ function EditClientModal({ client, onClose }: { client: Client; onClose: () => v
           color_hex: color,
           avatar_initials: initials,
           status,
+          client_link: clientLink.trim() || null,
+          posts_per_day: Math.max(0, parseInt(postsPerDay, 10) || 0),
+          videos_per_day: Math.max(0, parseInt(videosPerDay, 10) || 0),
         })
         .eq("id", client.id);
       if (error) throw error;
@@ -359,6 +382,17 @@ function EditClientModal({ client, onClose }: { client: Client; onClose: () => v
           <Input label="Categoria" value={category} onChange={setCategory} placeholder="Ex: Moda, Restaurante..." />
           <Input label="E-mail de contato" value={email} onChange={setEmail} type="email" />
           <Input label="Telefone" value={phone} onChange={setPhone} />
+          <Input
+            label="Link do cliente"
+            value={clientLink}
+            onChange={setClientLink}
+            type="url"
+            placeholder="https://drive.google.com/... ou @perfil"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Posts por dia" value={postsPerDay} onChange={setPostsPerDay} type="number" />
+            <Input label="Vídeos por dia" value={videosPerDay} onChange={setVideosPerDay} type="number" />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs mb-1.5" style={{ color: "var(--muted-foreground)" }}>Cor</label>
@@ -387,9 +421,6 @@ function EditClientModal({ client, onClose }: { client: Client; onClose: () => v
               </select>
             </div>
           </div>
-          <p className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
-            Projetos e posts/dia são gerenciados na página de detalhes do cliente.
-          </p>
           <button
             type="submit"
             disabled={save.isPending}

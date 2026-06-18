@@ -265,6 +265,17 @@ function NewClientModal({ onClose }: { onClose: () => void }) {
           <Input label="Categoria" value={category} onChange={setCategory} placeholder="Ex: Moda, Restaurante..." />
           <Input label="E-mail de contato" value={email} onChange={setEmail} type="email" />
           <Input label="Telefone" value={phone} onChange={setPhone} />
+          <Input
+            label="Link do cliente"
+            value={clientLink}
+            onChange={setClientLink}
+            type="url"
+            placeholder="https://drive.google.com/... ou @perfil"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <Input label="Posts por dia" value={postsPerDay} onChange={setPostsPerDay} type="number" />
+            <Input label="Vídeos por dia" value={videosPerDay} onChange={setVideosPerDay} type="number" />
+          </div>
           <div>
             <label className="block text-xs mb-1.5" style={{ color: "var(--muted-foreground)" }}>Cor</label>
             <input

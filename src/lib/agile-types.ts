@@ -1,5 +1,5 @@
 export type Role = "admin" | "editor" | "viewer";
-export type Status = "active" | "inactive";
+export type Status = "pending" | "active" | "inactive";
 export type Platform = "instagram" | "youtube" | "tiktok" | "facebook" | "threads" | "kwai";
 export type PostType = "post" | "reels" | "shorts" | "video" | "carrossel" | "story" | "live";
 

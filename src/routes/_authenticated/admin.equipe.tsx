@@ -3,11 +3,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Plus, Trash2, X } from "lucide-react";
+import { Plus, Send, Trash2, X } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { createEmployee, deleteEmployee } from "@/lib/api/admin.functions";
+import { createEmployee, deleteEmployee, resendInvite } from "@/lib/api/admin.functions";
 import { todayStr } from "@/lib/utils-date";
 import type { Client, ClientAssignment, Employee, PostCompletion, Role } from "@/lib/agile-types";
 
@@ -20,6 +20,7 @@ function EquipePage() {
   const navigate = useNavigate();
   const qc = useQueryClient();
   const removeEmployee = useServerFn(deleteEmployee);
+  const resendInviteFn = useServerFn(resendInvite);
   const [selected, setSelected] = useState<Employee | null>(null);
   const [showNew, setShowNew] = useState(false);
 
@@ -32,6 +33,14 @@ function EquipePage() {
       qc.invalidateQueries({ queryKey: ["employees"] });
       qc.invalidateQueries({ queryKey: ["all-assignments"] });
     },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  const resendMut = useMutation({
+    mutationFn: async (employeeId: string) => {
+      await resendInviteFn({ data: { employeeId } });
+    },
+    onSuccess: () => toast.success("Convite reenviado."),
     onError: (e: Error) => toast.error(e.message),
   });
 
@@ -187,11 +196,24 @@ function EquipePage() {
                       className="text-xs px-2 py-0.5 rounded-md"
                       style={{
                         backgroundColor:
-                          e.status === "active" ? "var(--success-bg)" : "var(--secondary)",
-                        color: e.status === "active" ? "var(--success)" : "var(--muted-foreground)",
+                          e.status === "active"
+                            ? "var(--success-bg)"
+                            : e.status === "pending"
+                              ? "var(--warning-bg)"
+                              : "var(--secondary)",
+                        color:
+                          e.status === "active"
+                            ? "var(--success)"
+                            : e.status === "pending"
+                              ? "var(--warning)"
+                              : "var(--muted-foreground)",
                       }}
                     >
-                      {e.status === "active" ? "Ativo" : "Inativo"}
+                      {e.status === "active"
+                        ? "Ativo"
+                        : e.status === "pending"
+                          ? "Convite pendente"
+                          : "Inativo"}
                     </span>
                   </td>
                   <td className="px-4 py-3 tabular-nums">{countFor(e.id)}</td>
@@ -215,6 +237,18 @@ function EquipePage() {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <div className="inline-flex items-center gap-2">
+                      {e.status === "pending" && (
+                        <button
+                          onClick={() => resendMut.mutate(e.id)}
+                          disabled={resendMut.isPending}
+                          aria-label={`Reenviar convite para ${e.name}`}
+                          title="Reenviar convite"
+                          className="p-1.5 rounded-md disabled:opacity-40 hover:bg-[var(--card-hover)]"
+                          style={{ color: "var(--warning)" }}
+                        >
+                          <Send className="size-4" />
+                        </button>
+                      )}
                       <button
                         onClick={() => setSelected(e)}
                         className="text-xs px-3 py-1.5 rounded-md"

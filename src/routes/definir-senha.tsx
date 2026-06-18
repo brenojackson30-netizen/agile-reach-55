@@ -1,8 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Zap } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { activateEmployee } from "@/lib/api/admin.functions";
 
 export const Route = createFileRoute("/definir-senha")({
   ssr: false,
@@ -11,8 +13,10 @@ export const Route = createFileRoute("/definir-senha")({
 
 function DefinirSenhaPage() {
   const navigate = useNavigate();
+  const activate = useServerFn(activateEmployee);
   const [ready, setReady] = useState(false);
   const [inviteTokenHash, setInviteTokenHash] = useState<string | null>(null);
+  const [inviteTokenType, setInviteTokenType] = useState<"invite" | "recovery">("invite");
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -40,8 +44,11 @@ function DefinirSenhaPage() {
       };
     }
 
-    if (tokenHash && type === "invite") {
+    // "invite" é o primeiro convite; "recovery" é gerado quando o admin reenvia
+    // o acesso pra um funcionário que ainda não tinha definido a senha.
+    if (tokenHash && (type === "invite" || type === "recovery")) {
       setInviteTokenHash(tokenHash);
+      setInviteTokenType(type);
       setReady(true);
       return () => {
         mounted = false;
@@ -76,7 +83,7 @@ function DefinirSenhaPage() {
     if (inviteTokenHash) {
       const { error: verifyError } = await supabase.auth.verifyOtp({
         token_hash: inviteTokenHash,
-        type: "invite",
+        type: inviteTokenType,
       });
       if (verifyError) {
         setSubmitting(false);
@@ -85,11 +92,19 @@ function DefinirSenhaPage() {
       }
     }
     const { error } = await supabase.auth.updateUser({ password });
-    setSubmitting(false);
     if (error) {
+      setSubmitting(false);
       toast.error("Falha ao definir senha: " + error.message);
       return;
     }
+    // Marca o funcionário como "active" agora que a senha foi definida — antes
+    // disso o RLS (get_my_role) trata o funcionário como inexistente.
+    try {
+      await activate();
+    } catch {
+      // Não bloqueia o acesso por isso; o admin pode ativar manualmente se falhar.
+    }
+    setSubmitting(false);
     toast.success("Senha definida! Bem-vindo.");
     navigate({ to: "/app/agenda", replace: true });
   };

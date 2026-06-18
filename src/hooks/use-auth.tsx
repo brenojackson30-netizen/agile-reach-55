@@ -34,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mounted) return;
       setSession(s);
       if (s?.user) {
+        setLoading(true);
         setTimeout(() => {
           loadEmployee(s.user.id).finally(() => {
             if (mounted) setLoading(false);

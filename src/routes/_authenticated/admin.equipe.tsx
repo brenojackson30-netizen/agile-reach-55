@@ -192,6 +192,24 @@ function EquipePage() {
                     </span>
                   </td>
                   <td className="px-4 py-3 tabular-nums">{countFor(e.id)}</td>
+                  <td className="px-4 py-3 tabular-nums">
+                    {(() => {
+                      const t = todayByEmployee.get(e.id) ?? { total: 0, done: 0 };
+                      if (t.total === 0) return <span style={{ color: "var(--muted-foreground)" }}>—</span>;
+                      const complete = t.done === t.total;
+                      return (
+                        <span
+                          className="text-xs px-2 py-0.5 rounded-md font-semibold"
+                          style={{
+                            backgroundColor: complete ? "var(--success-bg)" : "var(--accent-bg)",
+                            color: complete ? "var(--success)" : "var(--accent)",
+                          }}
+                        >
+                          {t.done}/{t.total}
+                        </span>
+                      );
+                    })()}
+                  </td>
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => setSelected(e)}

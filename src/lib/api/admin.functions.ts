@@ -73,3 +73,48 @@ export const createEmployee = createServerFn({ method: "POST" })
 
     return { employee: emp };
   });
+
+const deleteEmployeeSchema = z.object({
+  employeeId: z.string().uuid(),
+});
+
+export const deleteEmployee = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: z.infer<typeof deleteEmployeeSchema>) =>
+    deleteEmployeeSchema.parse(input),
+  )
+  .handler(async ({ data, context }) => {
+    const { data: meEmp, error: meErr } = await context.supabase
+      .from("employees")
+      .select("id, role")
+      .eq("user_id", context.userId)
+      .maybeSingle();
+    if (meErr) throw new Error(meErr.message);
+    if (!meEmp || meEmp.role !== "admin")
+      throw new Error("Apenas admins podem remover funcionários.");
+    if (meEmp.id === data.employeeId)
+      throw new Error("Você não pode remover a si mesmo.");
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: target, error: tErr } = await supabaseAdmin
+      .from("employees")
+      .select("user_id")
+      .eq("id", data.employeeId)
+      .maybeSingle();
+    if (tErr) throw new Error(tErr.message);
+    if (!target) throw new Error("Funcionário não encontrado.");
+
+    await supabaseAdmin.from("client_assignments").delete().eq("employee_id", data.employeeId);
+    const { error: delEmpErr } = await supabaseAdmin
+      .from("employees")
+      .delete()
+      .eq("id", data.employeeId);
+    if (delEmpErr) throw new Error(delEmpErr.message);
+
+    if (target.user_id) {
+      await supabaseAdmin.auth.admin.deleteUser(target.user_id);
+    }
+
+    return { ok: true };
+  });

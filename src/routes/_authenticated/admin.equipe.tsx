@@ -3,11 +3,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Plus, X } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { createEmployee } from "@/lib/api/admin.functions";
+import { createEmployee, deleteEmployee } from "@/lib/api/admin.functions";
 import { todayStr } from "@/lib/utils-date";
 import type { Client, ClientAssignment, Employee, PostCompletion, Role } from "@/lib/agile-types";
 
@@ -18,8 +18,22 @@ export const Route = createFileRoute("/_authenticated/admin/equipe")({
 function EquipePage() {
   const { employee, loading } = useAuth();
   const navigate = useNavigate();
+  const qc = useQueryClient();
+  const removeEmployee = useServerFn(deleteEmployee);
   const [selected, setSelected] = useState<Employee | null>(null);
   const [showNew, setShowNew] = useState(false);
+
+  const deleteMut = useMutation({
+    mutationFn: async (employeeId: string) => {
+      await removeEmployee({ data: { employeeId } });
+    },
+    onSuccess: () => {
+      toast.success("Funcionário removido.");
+      qc.invalidateQueries({ queryKey: ["employees"] });
+      qc.invalidateQueries({ queryKey: ["all-assignments"] });
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
 
   useEffect(() => {
     if (!loading && employee && employee.role !== "admin") {
@@ -200,13 +214,41 @@ function EquipePage() {
                     })()}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => setSelected(e)}
-                      className="text-xs px-3 py-1.5 rounded-md"
-                      style={{ backgroundColor: "var(--accent-bg)", color: "var(--accent)" }}
-                    >
-                      Gerenciar
-                    </button>
+                    <div className="inline-flex items-center gap-2">
+                      <button
+                        onClick={() => setSelected(e)}
+                        className="text-xs px-3 py-1.5 rounded-md"
+                        style={{ backgroundColor: "var(--accent-bg)", color: "var(--accent)" }}
+                      >
+                        Gerenciar
+                      </button>
+                      <button
+                        onClick={() => {
+                          if (employee?.id === e.id) {
+                            toast.error("Você não pode remover a si mesmo.");
+                            return;
+                          }
+                          if (
+                            confirm(
+                              `Remover ${e.name}? Esta ação apaga o acesso e desfaz os vínculos com clientes.`,
+                            )
+                          ) {
+                            deleteMut.mutate(e.id);
+                          }
+                        }}
+                        disabled={deleteMut.isPending || employee?.id === e.id}
+                        aria-label={`Remover ${e.name}`}
+                        title={
+                          employee?.id === e.id
+                            ? "Você não pode remover a si mesmo"
+                            : "Remover funcionário"
+                        }
+                        className="p-1.5 rounded-md disabled:opacity-40 hover:bg-[var(--card-hover)]"
+                        style={{ color: "var(--destructive, #dc2626)" }}
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

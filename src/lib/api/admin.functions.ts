@@ -28,10 +28,12 @@ export const createEmployee = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     // Determine site origin from the request to build the invite redirect URL
+    const req = getRequest();
+    const headers = req.headers;
     const origin =
-      getRequestHeader("origin") ||
-      (getRequestHeader("referer") ? new URL(getRequestHeader("referer")!).origin : "") ||
-      (getRequestHeader("host") ? `https://${getRequestHeader("host")}` : "");
+      headers.get("origin") ||
+      (headers.get("referer") ? new URL(headers.get("referer")!).origin : "") ||
+      (headers.get("host") ? `https://${headers.get("host")}` : "");
     const redirectTo = `${origin}/definir-senha`;
 
     // Send invite e-mail — user defines the password on first access

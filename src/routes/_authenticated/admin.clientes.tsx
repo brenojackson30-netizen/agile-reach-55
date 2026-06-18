@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus, Search, X } from "lucide-react";
+import { Pencil, Plus, Search, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
@@ -14,6 +14,7 @@ export const Route = createFileRoute("/_authenticated/admin/clientes")({
 function ClientesPage() {
   const [search, setSearch] = useState("");
   const [showNew, setShowNew] = useState(false);
+  const [editing, setEditing] = useState<Client | null>(null);
   const { employee } = useAuth();
   const isAdmin = employee?.role === "admin";
 
@@ -118,54 +119,73 @@ function ClientesPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {filtered.map(({ client, projectCount, dailyPosts }) => (
-            <Link
+            <div
               key={client.id}
-              to="/admin/clientes/$id"
-              params={{ id: client.id }}
-              className="rounded-xl border p-4 transition-colors hover:bg-[var(--card-hover)]"
+              className="relative rounded-xl border transition-colors hover:bg-[var(--card-hover)]"
               style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
             >
-              <div className="flex items-center gap-3 mb-3">
-                <div
-                  className="size-11 rounded-full flex items-center justify-center text-sm font-bold"
-                  style={{ backgroundColor: client.color_hex ?? "#6366F1", color: "#fff" }}
-                  aria-hidden
-                >
-                  {client.avatar_initials || client.name.slice(0, 2).toUpperCase()}
+              <Link
+                to="/admin/clientes/$id"
+                params={{ id: client.id }}
+                className="block p-4"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div
+                    className="size-11 rounded-full flex items-center justify-center text-sm font-bold shrink-0"
+                    style={{ backgroundColor: client.color_hex ?? "#6366F1", color: "#fff" }}
+                    aria-hidden
+                  >
+                    {client.avatar_initials || client.name.slice(0, 2).toUpperCase()}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-semibold truncate pr-8" style={{ color: "var(--foreground)" }}>
+                      {client.name}
+                    </p>
+                    <p className="text-xs truncate" style={{ color: "var(--muted-foreground)" }}>
+                      {client.category}
+                    </p>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold truncate" style={{ color: "var(--foreground)" }}>
-                    {client.name}
-                  </p>
-                  <p className="text-xs truncate" style={{ color: "var(--muted-foreground)" }}>
-                    {client.category}
-                  </p>
+                <div className="flex items-center gap-4 text-xs" style={{ color: "var(--muted-foreground)" }}>
+                  <span>
+                    <strong style={{ color: "var(--foreground)" }}>{projectCount}</strong> projetos
+                  </span>
+                  <span>
+                    <strong style={{ color: "var(--foreground)" }}>{dailyPosts}</strong> posts/dia
+                  </span>
+                  <span
+                    className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-md"
+                    style={{
+                      backgroundColor:
+                        client.status === "active" ? "var(--success-bg)" : "var(--secondary)",
+                      color: client.status === "active" ? "var(--success)" : "var(--muted-foreground)",
+                    }}
+                  >
+                    {client.status === "active" ? "Ativo" : "Inativo"}
+                  </span>
                 </div>
-              </div>
-              <div className="flex items-center gap-4 text-xs" style={{ color: "var(--muted-foreground)" }}>
-                <span>
-                  <strong style={{ color: "var(--foreground)" }}>{projectCount}</strong> projetos
-                </span>
-                <span>
-                  <strong style={{ color: "var(--foreground)" }}>{dailyPosts}</strong> posts/dia
-                </span>
-                <span
-                  className="ml-auto inline-flex items-center gap-1 px-2 py-0.5 rounded-md"
-                  style={{
-                    backgroundColor:
-                      client.status === "active" ? "var(--success-bg)" : "var(--secondary)",
-                    color: client.status === "active" ? "var(--success)" : "var(--muted-foreground)",
+              </Link>
+              {isAdmin && (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setEditing(client);
                   }}
+                  aria-label={`Editar ${client.name}`}
+                  className="absolute top-3 right-3 p-1.5 rounded-md hover:bg-[var(--card-hover)] border"
+                  style={{ borderColor: "var(--border-subtle)", backgroundColor: "var(--card)" }}
                 >
-                  {client.status === "active" ? "Ativo" : "Inativo"}
-                </span>
-              </div>
-            </Link>
+                  <Pencil className="size-3.5" style={{ color: "var(--muted-foreground)" }} />
+                </button>
+              )}
+            </div>
           ))}
         </div>
       )}
 
       {showNew && <NewClientModal onClose={() => setShowNew(false)} />}
+      {editing && <EditClientModal client={editing} onClose={() => setEditing(null)} />}
     </div>
   );
 }
@@ -256,6 +276,127 @@ function NewClientModal({ onClose }: { onClose: () => void }) {
             style={{ backgroundColor: "var(--accent)", color: "var(--accent-foreground)" }}
           >
             {create.isPending ? "Criando..." : "Criar cliente"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function EditClientModal({ client, onClose }: { client: Client; onClose: () => void }) {
+  const qc = useQueryClient();
+  const [name, setName] = useState(client.name ?? "");
+  const [category, setCategory] = useState(client.category ?? "");
+  const [email, setEmail] = useState(client.email ?? "");
+  const [phone, setPhone] = useState(client.phone ?? "");
+  const [color, setColor] = useState(client.color_hex ?? "#6366F1");
+  const [status, setStatus] = useState<"active" | "inactive">(
+    (client.status as "active" | "inactive") ?? "active",
+  );
+
+  const save = useMutation({
+    mutationFn: async () => {
+      const trimmed = name.trim();
+      if (!trimmed) throw new Error("Nome é obrigatório");
+      const initials = trimmed
+        .split(/\s+/)
+        .map((p) => p[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+      const { error } = await supabase
+        .from("clients")
+        .update({
+          name: trimmed,
+          category: category.trim() || null,
+          email: email.trim() || null,
+          phone: phone.trim() || null,
+          color_hex: color,
+          avatar_initials: initials,
+          status,
+        })
+        .eq("id", client.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Cliente atualizado");
+      qc.invalidateQueries({ queryKey: ["clients-list"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-data"] });
+      qc.invalidateQueries({ queryKey: ["all-clients-admin"] });
+      qc.invalidateQueries({ queryKey: ["client-detail", client.id] });
+      onClose();
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  return (
+    <div
+      className="fixed inset-0 z-[400] flex items-center justify-center p-4"
+      style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-md rounded-xl border"
+        style={{ backgroundColor: "var(--card)", borderColor: "var(--border)" }}
+      >
+        <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: "var(--border-subtle)" }}>
+          <h2 className="font-semibold" style={{ color: "var(--foreground)" }}>Editar cliente</h2>
+          <button onClick={onClose} aria-label="Fechar" className="p-1 rounded-md hover:bg-[var(--card-hover)]">
+            <X className="size-4" style={{ color: "var(--muted-foreground)" }} />
+          </button>
+        </div>
+        <form
+          className="p-4 space-y-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            save.mutate();
+          }}
+        >
+          <Input label="Nome *" value={name} onChange={setName} required />
+          <Input label="Categoria" value={category} onChange={setCategory} placeholder="Ex: Moda, Restaurante..." />
+          <Input label="E-mail de contato" value={email} onChange={setEmail} type="email" />
+          <Input label="Telefone" value={phone} onChange={setPhone} />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs mb-1.5" style={{ color: "var(--muted-foreground)" }}>Cor</label>
+              <input
+                type="color"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="h-9 w-full rounded-md border cursor-pointer"
+                style={{ borderColor: "var(--border)", backgroundColor: "var(--background)" }}
+              />
+            </div>
+            <div>
+              <label className="block text-xs mb-1.5" style={{ color: "var(--muted-foreground)" }}>Status</label>
+              <select
+                value={status}
+                onChange={(e) => setStatus(e.target.value as "active" | "inactive")}
+                className="w-full rounded-md border px-3 py-2 text-sm outline-none h-9"
+                style={{
+                  backgroundColor: "var(--background)",
+                  borderColor: "var(--border)",
+                  color: "var(--foreground)",
+                }}
+              >
+                <option value="active">Ativo</option>
+                <option value="inactive">Inativo</option>
+              </select>
+            </div>
+          </div>
+          <p className="text-[11px]" style={{ color: "var(--muted-foreground)" }}>
+            Projetos e posts/dia são gerenciados na página de detalhes do cliente.
+          </p>
+          <button
+            type="submit"
+            disabled={save.isPending}
+            className="w-full rounded-md py-2 text-sm font-semibold disabled:opacity-60"
+            style={{ backgroundColor: "var(--accent)", color: "var(--accent-foreground)" }}
+          >
+            {save.isPending ? "Salvando..." : "Salvar alterações"}
           </button>
         </form>
       </div>

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { ExternalLink, Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Client, Project, ScheduledPost, SocialProfile } from "@/lib/agile-types";
 

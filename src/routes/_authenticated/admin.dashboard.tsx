@@ -133,7 +133,10 @@ function DashboardPage() {
 
   const completionMap = useMemo(() => {
     const m = new Map<string, PostCompletion>();
-    (completions ?? []).forEach((c) => m.set(c.scheduled_post_id, c));
+    (completions ?? []).forEach((c) => {
+      const key = c.post_id ?? c.scheduled_post_id;
+      if (key) m.set(key, c);
+    });
     return m;
   }, [completions]);
 

@@ -51,13 +51,22 @@ function EquipePage() {
 
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto">
-      <header className="mb-6">
-        <h1 className="text-2xl md:text-3xl font-bold" style={{ color: "var(--foreground)" }}>
-          Equipe
-        </h1>
-        <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>
-          Gerencie funcionários e clientes atribuídos.
-        </p>
+      <header className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold" style={{ color: "var(--foreground)" }}>
+            Equipe
+          </h1>
+          <p className="text-sm mt-1" style={{ color: "var(--muted-foreground)" }}>
+            Gerencie funcionários e clientes atribuídos.
+          </p>
+        </div>
+        <button
+          onClick={() => setShowNew(true)}
+          className="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold rounded-md"
+          style={{ backgroundColor: "var(--accent)", color: "var(--accent-foreground)" }}
+        >
+          <Plus className="size-4" /> Novo funcionário
+        </button>
       </header>
 
       {isLoading ? (

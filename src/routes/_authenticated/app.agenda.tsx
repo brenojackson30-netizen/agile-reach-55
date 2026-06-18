@@ -33,7 +33,7 @@ interface AgendaItem {
 }
 
 function MinhaAgendaPage() {
-  const { session } = useAuth();
+  const { session, employee } = useAuth();
   const qc = useQueryClient();
   const today = todayStr();
   const dow = todayWeekday();

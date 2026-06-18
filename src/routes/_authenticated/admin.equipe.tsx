@@ -3,11 +3,11 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { Plus, X } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/use-auth";
-import { createEmployee } from "@/lib/api/admin.functions";
+import { createEmployee, deleteEmployee } from "@/lib/api/admin.functions";
 import { todayStr } from "@/lib/utils-date";
 import type { Client, ClientAssignment, Employee, PostCompletion, Role } from "@/lib/agile-types";
 

@@ -186,6 +186,7 @@ function DashboardPage() {
         if (error) throw error;
       } else {
         const { error } = await supabase.from("post_completions").insert({
+          post_id: item.post.id,
           scheduled_post_id: item.post.id,
           completed_date: today,
           completed_by: session?.user.id,

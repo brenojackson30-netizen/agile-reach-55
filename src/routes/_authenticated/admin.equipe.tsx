@@ -158,6 +158,7 @@ function EquipePage() {
                 <th className="px-4 py-3">Papel</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Clientes</th>
+                <th className="px-4 py-3">Hoje</th>
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>

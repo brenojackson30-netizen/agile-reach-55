@@ -153,15 +153,14 @@ function NewEmployeeModal({ onClose }: { onClose: () => void }) {
   const create = useServerFn(createEmployee);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [role, setRole] = useState<Role>("editor");
 
   const mut = useMutation({
     mutationFn: async () => {
-      await create({ data: { name: name.trim(), email: email.trim(), password, role } });
+      await create({ data: { name: name.trim(), email: email.trim(), role } });
     },
     onSuccess: () => {
-      toast.success("Funcionário criado. Ele já pode acessar com o e-mail e senha definidos.");
+      toast.success(`Convite enviado para ${email.trim()}.`);
       qc.invalidateQueries({ queryKey: ["employees"] });
       onClose();
     },
@@ -196,7 +195,6 @@ function NewEmployeeModal({ onClose }: { onClose: () => void }) {
         >
           <NField label="Nome *" value={name} onChange={setName} required />
           <NField label="E-mail *" value={email} onChange={setEmail} type="email" required />
-          <NField label="Senha (mín. 8) *" value={password} onChange={setPassword} type="password" required />
           <div>
             <label className="block text-xs mb-1.5" style={{ color: "var(--muted-foreground)" }}>Papel</label>
             <select
@@ -211,7 +209,7 @@ function NewEmployeeModal({ onClose }: { onClose: () => void }) {
             </select>
           </div>
           <p className="text-xs" style={{ color: "var(--muted-foreground)" }}>
-            Compartilhe o e-mail e a senha com o funcionário. Ele poderá entrar imediatamente.
+            Enviaremos um e-mail de convite. O funcionário define a senha no primeiro acesso.
           </p>
           <button
             type="submit"
@@ -219,7 +217,7 @@ function NewEmployeeModal({ onClose }: { onClose: () => void }) {
             className="w-full rounded-md py-2 text-sm font-semibold disabled:opacity-60"
             style={{ backgroundColor: "var(--accent)", color: "var(--accent-foreground)" }}
           >
-            {mut.isPending ? "Criando..." : "Criar funcionário"}
+            {mut.isPending ? "Enviando convite..." : "Enviar convite"}
           </button>
         </form>
       </div>

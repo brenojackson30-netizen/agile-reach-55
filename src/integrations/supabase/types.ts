@@ -137,6 +137,51 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_task_completions: {
+        Row: {
+          client_id: string
+          completed_at: string
+          completed_date: string
+          employee_id: string
+          id: string
+          kind: string
+          task_index: number
+        }
+        Insert: {
+          client_id: string
+          completed_at?: string
+          completed_date: string
+          employee_id: string
+          id?: string
+          kind: string
+          task_index: number
+        }
+        Update: {
+          client_id?: string
+          completed_at?: string
+          completed_date?: string
+          employee_id?: string
+          id?: string
+          kind?: string
+          task_index?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_task_completions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_task_completions_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           avatar_initials: string | null
